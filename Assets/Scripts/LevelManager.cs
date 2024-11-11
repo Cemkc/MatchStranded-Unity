@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Flap;
 using UnityEngine;
@@ -32,12 +33,14 @@ public class LevelManager : MonoBehaviour
         }
         
         _tileMap = new Dictionary<int, Tile>();
+        _grids = new List<Grid>();
 
     }
 
     void Start()
     {
         GenerateBaseGrid();
+        InputManager.s_Instance.ConnectInput(this);
     }
 
     void Update()
@@ -66,9 +69,10 @@ public class LevelManager : MonoBehaviour
     
                 tile.transform.localScale = new Vector3(tileWidth, tileHeight, 1);
     
-                Vector2 tilePosition = new Vector2(
+                Vector2 tilePosition = new Vector3(
                     startPosition.x + col * tileWidth,
-                    startPosition.y + row * tileHeight
+                    startPosition.y + row * tileHeight,
+                    0.0f
                 );
 
                 tile.transform.position = tilePosition;
@@ -76,16 +80,21 @@ public class LevelManager : MonoBehaviour
 
                 _tileMap[tileIndex] = tile.GetComponent<Tile>();
 
-                tile.GetComponent<Tile>().Init(_tileObjects);
+                tile.GetComponent<Tile>().Init(tileIndex, _tileObjects);
 
                 tileIndex++;
             }
         }
 
-        Grid grid = new Grid(_gridBlueprints[0]);
-        grid.RandomFillTiles();
-        
-        grid.ClickTile(3);
+        foreach (GridBlueprint gridBlueprint in _gridBlueprints)
+        {
+            _grids.Add(new Grid(gridBlueprint));
+        }
+
+        foreach (Grid grid in _grids)
+        {
+            grid.RandomFillTiles();
+        }
     }
 
     void SetPlayField()
@@ -106,4 +115,37 @@ public class LevelManager : MonoBehaviour
             playFieldHeight
         );
     }
+
+
+    public void OnTapInput(Vector2 touchScreenPosition)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(touchScreenPosition);
+        RaycastHit2D hit = Physics2D.GetRayIntersection(ray);
+
+        if(hit && hit.collider.CompareTag("Tile"))
+        {
+            int clickedTileId = hit.collider.transform.GetComponent<Tile>().TileId;
+            Grid grid = GetGridOwningId(clickedTileId);
+            if(grid != null) grid.ClickTile(clickedTileId);
+        }
+    }
+
+    private Grid GetGridOwningId(int tileId)
+    {
+        foreach (Grid grid in _grids)
+        {
+            if(Array.Exists(grid.OcccupiedPositions, element => element == tileId))
+            {
+                return grid;
+            }
+        }
+
+        return null;
+    }
+
+    // private int WorldToTile()
+    // {
+
+    // }
+
 }

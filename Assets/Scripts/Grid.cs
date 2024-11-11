@@ -7,13 +7,13 @@ public class Grid
 
     [SerializeField] private int _playFieldDimension;
     [SerializeField] private int[] _occcupiedPositions;
+    private Dictionary<int, Queue<TileObjType>> _tileObjPool;
     [SerializeField] private GameObject[] _blockPrefabs;
 
     // private float[,] _gridArray;
 
     public int PlayFieldDimension { get => _playFieldDimension; }
     public int[] OcccupiedPositions { get => _occcupiedPositions; }
-    public GameObject[] BlockPrefabs { get => _blockPrefabs; }
 
     public Grid(GridBlueprint gridBP)
     {
@@ -42,9 +42,19 @@ public class Grid
 
         List<int> connectedTiles = new List<int>();
         GetConnectedTiles(tileNumber, ref connectedTiles);
+        string str = "Cliked at tile: " + tileNumber + ", connected tiles are: ";
         foreach (int tile in connectedTiles)
         {
-            Debug.Log(tile);
+            str += tile + ", ";
+        }
+        Debug.Log(str);
+
+        if(connectedTiles.Count > 1)
+        {
+            foreach (int tileId in connectedTiles)
+            {
+                LevelManager.s_Instance.TileMap[tileId].SetTile(TileObjType.None);
+            }
         }
 
     }
@@ -52,17 +62,16 @@ public class Grid
     private void GetConnectedTiles(int tile, ref List<int> connectedTiles, int previousTile = -1)
     {
         List<int> adjacentTiles = GetAdjacentTiles(tile);
-        string str = "";
-        foreach (int adjTile in adjacentTiles)
-        {
-            str += adjTile.ToString() + ", ";
-        }
-        Debug.Log("Adjacent tiles for tile " + tile + ": " + str);
+        // string str = "";
+        // foreach (int adjTile in adjacentTiles)
+        // {
+        //     str += adjTile.ToString() + ", ";
+        // }
+        // Debug.Log("Adjacent tiles for tile " + tile + ": " + str);
 
         if(previousTile == -1)
         {
             connectedTiles.Add(tile);
-            Debug.Log("Added first tile: " + tile);
         }
         
         foreach (int adjacentTile in adjacentTiles)
@@ -71,7 +80,9 @@ public class Grid
             {
                 continue;
             }
-            if(LevelManager.s_Instance.TileMap[adjacentTile].ActiveTileObject.GetTileObjType() == LevelManager.s_Instance.TileMap[tile].ActiveTileObject.GetTileObjType())
+            TileObjType selfType = LevelManager.s_Instance.TileMap[tile].GetTileType();
+            TileObjType adjacentType = LevelManager.s_Instance.TileMap[adjacentTile].GetTileType();
+            if(selfType == adjacentType)
             {
                 if(!connectedTiles.Contains(adjacentTile)) connectedTiles.Add(adjacentTile);
                 GetConnectedTiles(adjacentTile, ref connectedTiles, tile);

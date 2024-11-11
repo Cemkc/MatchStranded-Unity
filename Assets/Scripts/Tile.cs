@@ -4,12 +4,14 @@ using UnityEngine;
 namespace Flap{
     public class Tile : MonoBehaviour
     {
-        TileObject activeTileObject;
+        private int _tileId;
+        private TileObject _activeTileObject;
 
-        public TileObject ActiveTileObject { get => activeTileObject; }
+        public int TileId { get => _tileId; }
 
-        public void Init(List<GameObject> tileObjectList)
+        public void Init(int id, List<GameObject> tileObjectList)
         {
+            _tileId = id;
             foreach (GameObject tileObject in tileObjectList)
             {
                 GameObject go = Instantiate(tileObject, transform);
@@ -21,19 +23,36 @@ namespace Flap{
 
         public void SetTile(TileObjType type)
         {
-            if(activeTileObject != null && type == activeTileObject.GetTileObjType()) return;
+            if((_activeTileObject != null && type == _activeTileObject.GetTileObjType()) ||
+            (_activeTileObject == null && type == TileObjType.None))
+            {
+                return;
+            } 
+
+            if(type == TileObjType.None)
+            {
+                _activeTileObject.gameObject.SetActive(false);
+                _activeTileObject = null;
+                return;
+            }
 
             TileObject[] tileObjects = GetComponentsInChildren<TileObject>(includeInactive: true);
             foreach (TileObject tileObject in tileObjects)
             {
                 if(tileObject.GetTileObjType() == type)
                 {
-                    if(activeTileObject != null) activeTileObject.gameObject.SetActive(false);
-                    activeTileObject = tileObject;
-                    activeTileObject.gameObject.SetActive(true);
+                    if(_activeTileObject != null) _activeTileObject.gameObject.SetActive(false);
+                    _activeTileObject = tileObject;
+                    _activeTileObject.gameObject.SetActive(true);
                 } 
             }
-            
+        }
+
+        public TileObjType GetTileType()
+        {
+            if(_activeTileObject == null) return TileObjType.None;
+
+            return _activeTileObject.GetTileObjType();
         }
 
         public void FillRandom()

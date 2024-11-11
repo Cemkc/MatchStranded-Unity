@@ -5,7 +5,9 @@ public enum TileObjType
     None,
     Red,
     Blue,
-    Green
+    Green,
+    Yellow,
+    Purple
 }
 
 public abstract class TileObject : MonoBehaviour
