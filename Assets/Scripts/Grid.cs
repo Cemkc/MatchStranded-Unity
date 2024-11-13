@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Flap;
+using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -12,18 +13,18 @@ public class Grid
     [SerializeField] private int[] _occcupiedPositions;
 
     [SerializeField] private int[,] _columnRowPositions;
-    private Dictionary<int, Queue<TileObjType>> _tileObjPool;
+    private Dictionary<int, Queue<TileObjectType>> _tileObjPool;
     [SerializeField] private GameObject[] _blockPrefabs;
 
     // private float[,] _gridArray;
 
     public int PlayFieldDimension { get => _playFieldDimension; }
     public bool[,] OcccupiedPositions2d { get => _occcupiedPositions2d; }
-    public Dictionary<int, Queue<TileObjType>> TileObjPool { get => _tileObjPool; }
+    public Dictionary<int, Queue<TileObjectType>> TileObjPool { get => _tileObjPool; }
 
     public Grid(GridBlueprint gridBP)
     {
-        _tileObjPool = new Dictionary<int, Queue<TileObjType>>();
+        _tileObjPool = new Dictionary<int, Queue<TileObjectType>>();
 
         _playFieldDimension = gridBP.PlayFieldDimension;
         _occcupiedPositions = gridBP.OcccupiedPositions;
@@ -35,7 +36,7 @@ public class Grid
 
     private bool[,] OccupiedPositionsTo2dArray(int[] occupiedPos)
     {
-        int dimension = LevelManager.s_Instance.GridDimension;
+        int dimension = LevelManager.GridDimension;
         bool[,] occupiedPosMap = new bool[dimension, dimension];
 
         for(int col = 0; col < occupiedPosMap.GetLength(0); col++)
@@ -63,19 +64,19 @@ public class Grid
         foreach (int tile in _occcupiedPositions)
         {
             var tileTypes = LevelManager.s_Instance.TileObjPrefabMap.Keys.ToList();
-            tileTypes.Remove(TileObjType.None);
-            TileObjType type = tileTypes[Random.Range(0, tileTypes.Count)];
+            tileTypes.Remove(TileObjectType.None);
+            TileObjectType type = tileTypes[Random.Range(0, tileTypes.Count)];
             LevelManager.s_Instance.GetTile(tile).SetTile(type);
         }
     }
 
-    public void ClickTile(int tileNumber)
+    public (List<int>, List<int>) ClickTile(int tileNumber)
     {
-
-        if(!LevelManager.s_Instance.GetTile(tileNumber).ActiveTileObject().Clickable) return;
+        if(!LevelManager.s_Instance.GetTile(tileNumber).ActiveTileObject().Clickable) return (null, null);
 
         List<int> connectedTiles = new List<int>();
-        GetConnectedTiles(tileNumber, ref connectedTiles);
+        List<int> hitTiles = new List<int>();
+        GetConnectedTiles(tileNumber, ref connectedTiles, ref hitTiles);
         string str = "Cliked at tile: " + tileNumber + ", connected tiles are: ";
         foreach (int tile in connectedTiles)
         {
@@ -83,27 +84,19 @@ public class Grid
         }
         Debug.Log(str);
 
-        if(connectedTiles.Count > 1)
+        string strHittable = "Cliked at tile: " + tileNumber + ", hittable tiles are: ";
+        foreach (int tile in hitTiles)
         {
-            foreach (int tileNum in connectedTiles)
-            {
-                LevelManager.s_Instance.GetTile(tileNum).SetTile(TileObjType.None);
-            }
-
-            LevelManager.s_Instance.FillEmptyTiles();
+            strHittable += tile + ", ";
         }
+        Debug.Log(strHittable);
 
+        return (connectedTiles, hitTiles);
     }
 
-    private void GetConnectedTiles(int tile, ref List<int> connectedTiles, int previousTile = -1)
+    private void GetConnectedTiles(int tile, ref List<int> connectedTiles, ref List<int> hittableTilesOnEdge, int previousTile = -1)
     {
         List<int> adjacentTiles = GetAdjacentTiles(tile);
-        string str = "Adjacent Tiles Are: ";
-        foreach (var adjTile in adjacentTiles)
-        {
-            str += adjTile + ", ";
-        }
-        Debug.Log(str);
 
         if(previousTile == -1)
         {
@@ -116,15 +109,19 @@ public class Grid
             {
                 continue;
             }
-            TileObjType selfType = LevelManager.s_Instance.GetTile(tile).GetTileType();
-            TileObjType adjacentType = LevelManager.s_Instance.GetTile(adjacentTile).GetTileType();
-            if(selfType == adjacentType && adjacentType != TileObjType.Absent)
+            TileObjectType selfType = LevelManager.s_Instance.GetTile(tile).GetTileType();
+            TileObjectType adjacentType = LevelManager.s_Instance.GetTile(adjacentTile).GetTileType();
+            if(selfType == adjacentType && adjacentType != TileObjectType.Absent)
             {
                 if(!connectedTiles.Contains(adjacentTile))
                 {
                     connectedTiles.Add(adjacentTile);
-                    GetConnectedTiles(adjacentTile, ref connectedTiles, tile);
+                    GetConnectedTiles(adjacentTile, ref connectedTiles, ref hittableTilesOnEdge, tile);
                 }
+            }
+            else if(LevelManager.s_Instance.GetTile(adjacentTile).GetTileCategory().HasFlag(TileObjectCategory.HittableTileObject))
+            {
+                hittableTilesOnEdge.Add(adjacentTile);
             }
         }
 
@@ -133,7 +130,7 @@ public class Grid
 
     private List<int> GetAdjacentTiles(int tile)
     {
-        int dimension = LevelManager.s_Instance.GridDimension;
+        int dimension = LevelManager.GridDimension;
         List<int> adjacentTiles = new List<int>();
 
         // Calculate row and column of the given tile
@@ -141,25 +138,25 @@ public class Grid
         int col = tile / dimension;
 
         // Check above (row + 1)
-        if (row + 1 < dimension && LevelManager.s_Instance.GetTile(tile + 1).GetTileType() != TileObjType.Absent)
+        if (row + 1 < dimension && LevelManager.s_Instance.GetTile(tile + 1).GetTileType() != TileObjectType.Absent)
         {
             adjacentTiles.Add(tile + 1);
         }
 
         // Check below (row - 1)
-        if (row - 1 >= 0 && LevelManager.s_Instance.GetTile(tile -1).GetTileType() != TileObjType.Absent)
+        if (row - 1 >= 0 && LevelManager.s_Instance.GetTile(tile -1).GetTileType() != TileObjectType.Absent)
         {
             adjacentTiles.Add(tile -1);
         }
 
         // Check right (col + 1)
-        if (col + 1 < dimension && LevelManager.s_Instance.GetTile(tile + dimension).GetTileType() != TileObjType.Absent)
+        if (col + 1 < dimension && LevelManager.s_Instance.GetTile(tile + dimension).GetTileType() != TileObjectType.Absent)
         {
             adjacentTiles.Add(tile + dimension);
         }
 
         // Check left (col - 1)
-        if (col - 1 >= 0 && LevelManager.s_Instance.GetTile(tile - dimension).GetTileType() != TileObjType.Absent)
+        if (col - 1 >= 0 && LevelManager.s_Instance.GetTile(tile - dimension).GetTileType() != TileObjectType.Absent)
         {
             adjacentTiles.Add(tile - dimension);
         }

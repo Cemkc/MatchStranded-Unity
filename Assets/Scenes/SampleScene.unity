@@ -543,7 +543,7 @@ MonoBehaviour:
   _presentTilePrefab: {fileID: 8211843544728404218, guid: fa3d157936b2fc24893dbff02ca62bb5, type: 3}
   _absentTilePrefab: {fileID: 8211843544728404218, guid: 6dee24bf8f878654aaa62ed88d91677a, type: 3}
   _tilePrefabAttribution:
-  - tileObjType: 0
+  - tileObjType: 1
     prefab: {fileID: 9132175921115857505, guid: 4ae9bae108851ea42ae18aecc409cae2, type: 3}
   - tileObjType: 2
     prefab: {fileID: 6835588470268470269, guid: e2db7a75614f5d448a034c95a25f3a63, type: 3}
@@ -555,6 +555,8 @@ MonoBehaviour:
     prefab: {fileID: 6835588470268470269, guid: c23b7804ca700fc49b7effce3070bb0b, type: 3}
   - tileObjType: 6
     prefab: {fileID: 6835588470268470269, guid: 5bb11079c7de5f54b8b1a0d618131fbe, type: 3}
+  - tileObjType: 7
+    prefab: {fileID: 6835588470268470269, guid: e0ce66a3a45cfd64eb01f2bc30f7966f, type: 3}
 --- !u!4 &1470740072
 Transform:
   m_ObjectHideFlags: 0

@@ -8,9 +8,14 @@ public class AbsentTile : Tile
         throw new System.NotImplementedException();
     }
 
-    public override TileObjType GetTileType()
+    public override TileObjectCategory GetTileCategory()
     {
-        return TileObjType.Absent;
+        return TileObjectCategory.Absent;
+    }
+
+    public override TileObjectType GetTileType()
+    {
+        return TileObjectType.Absent;
     }
 
     public override void Init(int col, int row)
@@ -22,7 +27,7 @@ public class AbsentTile : Tile
     {
     }
 
-    public override void SetTile(TileObjType type)
+    public override void SetTile(TileObjectType type)
     {
         Debug.Log("Setting an absent tile is not allowed.");
         return;

@@ -5,9 +5,14 @@ public class PresentTile : Tile
 {
     private TileObject _activeTileObject;
 
-    public override TileObjType GetTileType()
+    public override TileObjectType GetTileType()
     {
         return _activeTileObject.Type;
+    }
+
+    public override TileObjectCategory GetTileCategory()
+    {
+        return _activeTileObject.Category;
     }
 
     public override void Init(int col, int row)
@@ -19,12 +24,13 @@ public class PresentTile : Tile
             GameObject go = Instantiate(tileObject, transform);
             go.transform.localPosition = new Vector3(0f, 0f, -1f);
             go.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
-            _activeTileObject = go.GetComponentInChildren<EmptyTile>();
+            EmptyTile emptyTile;
+            if(go.TryGetComponent(out emptyTile)) _activeTileObject = emptyTile;
             go.SetActive(false);
         }
     }
 
-    public override void SetTile(TileObjType type)
+    public override void SetTile(TileObjectType type)
     {
         if(_activeTileObject != null && type == _activeTileObject.Type)
         {

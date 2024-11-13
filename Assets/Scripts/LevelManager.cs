@@ -7,7 +7,7 @@ using UnityEngine;
 [Serializable]
 public struct TilePrefabAttribution
 {
-    public TileObjType tileObjType;
+    public TileObjectType tileObjType;
     public GameObject prefab;
 }
 
@@ -23,7 +23,7 @@ public class LevelManager : MonoBehaviour
 
     [SerializeField] private TilePrefabAttribution[] _tilePrefabAttribution;
 
-    private Dictionary<TileObjType, GameObject> _tileObjPrefabMap;
+    private Dictionary<TileObjectType, GameObject> _tileObjPrefabMap;
 
     private Tile[,] _tileMap;
 
@@ -32,9 +32,9 @@ public class LevelManager : MonoBehaviour
     private float _tileWidth;
     private float _tileHeight;
 
-    public int GridDimension { get => _gridDimension; }
+    public static int GridDimension { get => s_Instance._gridDimension; }
     public Tile[,] TileMap { get => _tileMap; }
-    public Dictionary<TileObjType, GameObject> TileObjPrefabMap { get => _tileObjPrefabMap; set => _tileObjPrefabMap = value; }
+    public Dictionary<TileObjectType, GameObject> TileObjPrefabMap { get => _tileObjPrefabMap; set => _tileObjPrefabMap = value; }
 
     void Awake()
     {
@@ -51,7 +51,7 @@ public class LevelManager : MonoBehaviour
         _tileMap = new Tile[_gridDimension, _gridDimension];
         _grid = new Grid(_gridBlueprint);
         
-        _tileObjPrefabMap = new Dictionary<TileObjType, GameObject>();
+        _tileObjPrefabMap = new Dictionary<TileObjectType, GameObject>();
         foreach (TilePrefabAttribution attrib in _tilePrefabAttribution)
         {
             _tileObjPrefabMap[attrib.tileObjType] = attrib.prefab;
@@ -90,7 +90,6 @@ public class LevelManager : MonoBehaviour
                     tileGo = Instantiate(_presentTilePrefab, transform);
                 }
                 else{
-                    Debug.Log("Found absent on row: " + row + ", column: " + col);
                     tileGo = Instantiate(_absentTilePrefab, transform);
                 }
 
@@ -143,9 +142,9 @@ public class LevelManager : MonoBehaviour
             for(int row = 0; row < _gridDimension; row++)
             {
                 Tile tile = _tileMap[col, row];
-                if(tile.GetTileType() == TileObjType.None)
+                if(tile.GetTileType() == TileObjectType.None)
                 {
-                    Debug.Log("Detected empty tile starting recursive algorithm. Empty tile is: " + tile.TilePos);
+                    // Debug.Log("Detected empty tile starting recursive algorithm. Empty tile is: " + tile.TilePos);
                     FillColumn(tile); // This will recursively fill the empty tiles.
                     break;
                 }
@@ -155,24 +154,24 @@ public class LevelManager : MonoBehaviour
 
     void FillColumn(Tile tile)
     {
-        if(tile.GetTileType() == TileObjType.None)
+        if(tile.GetTileType() == TileObjectType.None)
         {
-            if(tile.GetTileType() == TileObjType.Absent)
+            if(tile.GetTileType() == TileObjectType.Absent)
             {
                 if(tile.TilePos.y + 1 >= _gridDimension) return;
                 else FillColumn(_tileMap[tile.TilePos.x, tile.TilePos.y + 1]);
             }
 
-            Debug.Log("Recursive algorithm started tile (" + tile.TilePos + ") seems to be empty attempting to fill. ");
+            // Debug.Log("Recursive algorithm started tile (" + tile.TilePos + ") seems to be empty attempting to fill. ");
             bool foundTileInGrid = false;
             for(int row = tile.TilePos.y + 1; row < _gridDimension; row++)
             {
                 Tile tileAbove = _tileMap[tile.TilePos.x, row];
-                if(tileAbove.GetTileType() != TileObjType.None && tileAbove.GetTileType() != TileObjType.Absent) // Change with tile.CanFall()
+                if(tileAbove.GetTileType() != TileObjectType.None && tileAbove.GetTileType() != TileObjectType.Absent) // Change with tile.CanFall()
                 {
                     foundTileInGrid = true;
-                    TileObjType type = tileAbove.GetTileType();
-                    tileAbove.SetTile(TileObjType.None);
+                    TileObjectType type = tileAbove.GetTileType();
+                    tileAbove.SetTile(TileObjectType.None);
                     StartCoroutine(FallToPosition(type, tileAbove.transform.position, tile));
                     // tile.SetTile(tileAbove.GetTileType());
                     break;
@@ -181,7 +180,7 @@ public class LevelManager : MonoBehaviour
 
             if(!foundTileInGrid && _grid.TileObjPool.ContainsKey(tile.TilePos.x) && _grid.TileObjPool[tile.TilePos.x].Count > 0)
             {
-                TileObjType type = _grid.TileObjPool[tile.TilePos.x].Dequeue();
+                TileObjectType type = _grid.TileObjPool[tile.TilePos.x].Dequeue();
                 Vector2 tilePos = GetTile(new Vector2Int(tile.TilePos.x, _gridDimension - 1)).transform.position;
                 tilePos.y += _tileHeight * 2; 
                 StartCoroutine(FallToPosition(type, tilePos, tile));
@@ -194,7 +193,7 @@ public class LevelManager : MonoBehaviour
 
     }
 
-    IEnumerator FallToPosition(TileObjType tileObjType, Vector2 startPosition, Tile tile)
+    IEnumerator FallToPosition(TileObjectType tileObjType, Vector2 startPosition, Tile tile)
     {
         GameObject tileObject = Instantiate(_tileObjPrefabMap[tileObjType], startPosition, Quaternion.identity);
         tileObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
@@ -230,10 +229,27 @@ public class LevelManager : MonoBehaviour
         if(hit && hit.collider.CompareTag("Tile"))
         {
             int clickedTileId = TilePosCoordToInt(hit.collider.transform.GetComponent<Tile>().TilePos);
-            _grid.ClickTile(clickedTileId);
+            (List<int> connectedTiles, List<int> hitTiles) = _grid.ClickTile(clickedTileId);
+            
+            if(connectedTiles.Count > 1)
+            {
+                foreach(int tileNum in connectedTiles)
+                {
+                    GetTile(tileNum).SetTile(TileObjectType.None);
+                }
+
+                foreach (int tileNum in hitTiles)
+                {
+                    Tile tile = GetTile(tileNum);
+                    if(!tile.GetTileCategory().HasFlag(TileObjectCategory.HittableTileObject)) continue; // We put same tiles into the list to be able to hit them multiple time but if the tile is gone-broke that means we should not do a cast
+                    HitableTile hitableTile = (HitableTile)tile.ActiveTileObject();
+                    hitableTile.OnHit(1);
+                }
+
+                FillEmptyTiles();
+            }
         }
     }
-
 
     public Tile GetTile(Vector2Int tilePos)
     {
@@ -245,19 +261,19 @@ public class LevelManager : MonoBehaviour
         return _tileMap[tileNum / _gridDimension, tileNum % _gridDimension];
     }
 
-    public int TilePosCoordToInt(Vector2Int pos)
+    public static int TilePosCoordToInt(Vector2Int pos)
     {
-        return _gridDimension * pos.x + pos.y;
+        return GridDimension * pos.x + pos.y;
     }
 
     public void OnTileObjectDestroy(TileObject tileObj)
     {
-        tileObj.ParentTile.SetTile(TileObjType.None);
+        tileObj.ParentTile.SetTile(TileObjectType.None);
     }
 
-    public void OnTileHit(int col, int row)
+    public void OnTileBroke(Tile tile)
     {
-        _tileMap[col, row].OnHit();
+        tile.SetTile(TileObjectType.None);
     }
 
 }

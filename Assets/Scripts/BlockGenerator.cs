@@ -12,7 +12,7 @@ public class BlockGenerator : MonoBehaviour
 
     [SerializeField] private BlockGenerationMethod _blockGenerationMethod;
 
-    public void GenerateBlock(TileObjType type)
+    public void GenerateBlock(TileObjectType type)
     {
 
     }

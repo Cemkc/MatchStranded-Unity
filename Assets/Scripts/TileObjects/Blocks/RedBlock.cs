@@ -3,6 +3,6 @@ public class RedBlock : Block
     public override void Init()
     {
         base.Init();
-        _type = TileObjType.Red;
+        _type = TileObjectType.Red;
     }
 }

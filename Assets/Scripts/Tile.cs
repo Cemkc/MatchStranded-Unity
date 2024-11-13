@@ -9,9 +9,10 @@ namespace Flap{
         public Vector2Int TilePos { get => _tilePos; }
 
         public abstract void Init(int col, int row);
-        public abstract void SetTile(TileObjType type);
+        public abstract void SetTile(TileObjectType type);
         public abstract TileObject ActiveTileObject();
-        public abstract TileObjType GetTileType();
+        public abstract TileObjectType GetTileType();
+        public abstract TileObjectCategory GetTileCategory();
         public abstract void OnHit();
     }
 }
