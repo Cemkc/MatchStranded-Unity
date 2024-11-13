@@ -1,10 +1,6 @@
-using UnityEngine;
-
 public class RedBlock : Block
 {
-    private TileObjType _blockType;
-
-    public RedBlock()
+    public override void Init()
     {
         _blockType = TileObjType.Red;
     }

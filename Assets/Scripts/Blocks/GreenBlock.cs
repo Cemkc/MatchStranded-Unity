@@ -1,9 +1,7 @@
 
 public class GreenBlock : Block
 {
-    private TileObjType _blockType;
-
-    public GreenBlock()
+    public override void Init()
     {
         _blockType = TileObjType.Green;
     }

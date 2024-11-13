@@ -1,10 +1,7 @@
-using UnityEngine;
 
 public class BlueBlock : Block
 {
-    private TileObjType _blockType;
-
-    public BlueBlock()
+    public override void Init()
     {
         _blockType = TileObjType.Blue;
     }

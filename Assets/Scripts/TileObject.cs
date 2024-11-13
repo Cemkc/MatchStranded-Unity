@@ -3,6 +3,7 @@ using UnityEngine;
 public enum TileObjType
 {
     None,
+    Absent,
     Red,
     Blue,
     Green,
@@ -13,4 +14,10 @@ public enum TileObjType
 public abstract class TileObject : MonoBehaviour
 {
     public abstract TileObjType GetTileObjType();
+    public abstract void Init();
+
+    void Awake()
+    {
+        Init();
+    }
 }

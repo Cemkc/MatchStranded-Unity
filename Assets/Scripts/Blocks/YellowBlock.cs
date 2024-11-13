@@ -1,10 +1,7 @@
-using UnityEngine;
 
 public class YellowBlock : Block
 {
-    private TileObjType _blockType;
-
-    public YellowBlock()
+    public override void Init()
     {
         _blockType = TileObjType.Yellow;
     }
@@ -13,4 +10,5 @@ public class YellowBlock : Block
     {
         return _blockType;
     }
+
 }

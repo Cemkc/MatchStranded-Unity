@@ -538,16 +538,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c870b1bf04fe31341843203deb8c9b4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playfieldDimension: 12
-  _gridBlueprints:
-  - {fileID: 11400000, guid: 571f5fd2c403d344983199c422ed146f, type: 2}
-  _tilePrefab: {fileID: 8211843544728404218, guid: fa3d157936b2fc24893dbff02ca62bb5, type: 3}
-  _tileObjects:
-  - {fileID: 7407075211744912771, guid: 34709eb62c4fb4043ae14bdeb422ecfb, type: 3}
-  - {fileID: 7356604826848351206, guid: 08d2a3379d6fa0341b35cb1dfb3bbc74, type: 3}
-  - {fileID: 6835588470268470269, guid: e2db7a75614f5d448a034c95a25f3a63, type: 3}
-  - {fileID: 6835588470268470269, guid: c23b7804ca700fc49b7effce3070bb0b, type: 3}
-  - {fileID: 6835588470268470269, guid: 5bb11079c7de5f54b8b1a0d618131fbe, type: 3}
+  _gridDimension: 6
+  _gridBlueprint: {fileID: 11400000, guid: 571f5fd2c403d344983199c422ed146f, type: 2}
+  _presentTilePrefab: {fileID: 8211843544728404218, guid: fa3d157936b2fc24893dbff02ca62bb5, type: 3}
+  _absentTilePrefab: {fileID: 8211843544728404218, guid: 6dee24bf8f878654aaa62ed88d91677a, type: 3}
+  _tilePrefabAttribution:
+  - tileObjType: 2
+    prefab: {fileID: 6835588470268470269, guid: e2db7a75614f5d448a034c95a25f3a63, type: 3}
+  - tileObjType: 3
+    prefab: {fileID: 7407075211744912771, guid: 34709eb62c4fb4043ae14bdeb422ecfb, type: 3}
+  - tileObjType: 4
+    prefab: {fileID: 7356604826848351206, guid: 08d2a3379d6fa0341b35cb1dfb3bbc74, type: 3}
+  - tileObjType: 5
+    prefab: {fileID: 6835588470268470269, guid: c23b7804ca700fc49b7effce3070bb0b, type: 3}
+  - tileObjType: 6
+    prefab: {fileID: 6835588470268470269, guid: 5bb11079c7de5f54b8b1a0d618131fbe, type: 3}
 --- !u!4 &1470740072
 Transform:
   m_ObjectHideFlags: 0
