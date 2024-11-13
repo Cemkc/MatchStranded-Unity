@@ -543,6 +543,8 @@ MonoBehaviour:
   _presentTilePrefab: {fileID: 8211843544728404218, guid: fa3d157936b2fc24893dbff02ca62bb5, type: 3}
   _absentTilePrefab: {fileID: 8211843544728404218, guid: 6dee24bf8f878654aaa62ed88d91677a, type: 3}
   _tilePrefabAttribution:
+  - tileObjType: 0
+    prefab: {fileID: 9132175921115857505, guid: 4ae9bae108851ea42ae18aecc409cae2, type: 3}
   - tileObjType: 2
     prefab: {fileID: 6835588470268470269, guid: e2db7a75614f5d448a034c95a25f3a63, type: 3}
   - tileObjType: 3

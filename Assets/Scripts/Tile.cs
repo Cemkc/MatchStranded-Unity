@@ -4,14 +4,14 @@ using UnityEngine;
 namespace Flap{
     public abstract class Tile : MonoBehaviour
     {
-        protected TileObject _activeTileObject;
         protected Vector2Int _tilePos;
 
         public Vector2Int TilePos { get => _tilePos; }
 
         public abstract void Init(int col, int row);
         public abstract void SetTile(TileObjType type);
-        public abstract TileObjType GetTileObjType();
+        public abstract TileObject ActiveTileObject();
+        public abstract TileObjType GetTileType();
         public abstract void OnHit();
     }
 }

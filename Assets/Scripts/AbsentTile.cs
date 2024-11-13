@@ -3,7 +3,12 @@ using Flap;
 
 public class AbsentTile : Tile
 {
-    public override TileObjType GetTileObjType()
+    public override TileObject ActiveTileObject()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override TileObjType GetTileType()
     {
         return TileObjType.Absent;
     }

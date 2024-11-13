@@ -143,7 +143,7 @@ public class LevelManager : MonoBehaviour
             for(int row = 0; row < _gridDimension; row++)
             {
                 Tile tile = _tileMap[col, row];
-                if(tile.GetTileObjType() == TileObjType.None)
+                if(tile.GetTileType() == TileObjType.None)
                 {
                     Debug.Log("Detected empty tile starting recursive algorithm. Empty tile is: " + tile.TilePos);
                     FillColumn(tile); // This will recursively fill the empty tiles.
@@ -155,27 +155,38 @@ public class LevelManager : MonoBehaviour
 
     void FillColumn(Tile tile)
     {
-        if(tile.GetTileObjType() == TileObjType.None)
+        if(tile.GetTileType() == TileObjType.None)
         {
-            if(tile.GetTileObjType() == TileObjType.Absent)
+            if(tile.GetTileType() == TileObjType.Absent)
             {
                 if(tile.TilePos.y + 1 >= _gridDimension) return;
                 else FillColumn(_tileMap[tile.TilePos.x, tile.TilePos.y + 1]);
             }
 
             Debug.Log("Recursive algorithm started tile (" + tile.TilePos + ") seems to be empty attempting to fill. ");
+            bool foundTileInGrid = false;
             for(int row = tile.TilePos.y + 1; row < _gridDimension; row++)
             {
                 Tile tileAbove = _tileMap[tile.TilePos.x, row];
-                if(tileAbove.GetTileObjType() != TileObjType.None && tileAbove.GetTileObjType() != TileObjType.Absent) // Change with tile.CanFall()
+                if(tileAbove.GetTileType() != TileObjType.None && tileAbove.GetTileType() != TileObjType.Absent) // Change with tile.CanFall()
                 {
-                    TileObjType type = tileAbove.GetTileObjType();
+                    foundTileInGrid = true;
+                    TileObjType type = tileAbove.GetTileType();
                     tileAbove.SetTile(TileObjType.None);
                     StartCoroutine(FallToPosition(type, tileAbove.transform.position, tile));
-                    // tile.SetTile(tileAbove.GetTileObjType());
+                    // tile.SetTile(tileAbove.GetTileType());
                     break;
                 }
             }
+
+            if(!foundTileInGrid && _grid.TileObjPool.ContainsKey(tile.TilePos.x) && _grid.TileObjPool[tile.TilePos.x].Count > 0)
+            {
+                TileObjType type = _grid.TileObjPool[tile.TilePos.x].Dequeue();
+                Vector2 tilePos = GetTile(new Vector2Int(tile.TilePos.x, _gridDimension - 1)).transform.position;
+                tilePos.y += _tileHeight * 2; 
+                StartCoroutine(FallToPosition(type, tilePos, tile));
+            }
+
         }
 
         if(tile.TilePos.y + 1 >= _gridDimension) return;
@@ -237,6 +248,11 @@ public class LevelManager : MonoBehaviour
     public int TilePosCoordToInt(Vector2Int pos)
     {
         return _gridDimension * pos.x + pos.y;
+    }
+
+    public void OnTileObjectDestroy(TileObject tileObj)
+    {
+        tileObj.ParentTile.SetTile(TileObjType.None);
     }
 
     public void OnTileHit(int col, int row)
