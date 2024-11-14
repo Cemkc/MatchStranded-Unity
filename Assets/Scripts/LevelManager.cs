@@ -102,15 +102,8 @@ public class LevelManager : MonoBehaviour
         }
         _tileDestroyed = false;
 
-
-        if(_fallSequenceCount > 0 && _preFallSequenceCount == 0)
-        {
-            Debug.Log("Fall sequnce started.");
-        }
-
         if(_fallSequenceCount <= 0 && _fallSequenceCount != _preFallSequenceCount)
         {
-            Debug.Log("Fall sequnce ended.");
             OnFillEnd?.Invoke();
         }
         _preFallSequenceCount = _fallSequenceCount;

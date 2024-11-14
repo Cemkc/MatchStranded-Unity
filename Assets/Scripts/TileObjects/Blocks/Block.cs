@@ -8,7 +8,6 @@ public abstract class Block : ClickableTileObject, IHitableTileobject
 
     public override void OnAwakeFunction(){
         base.OnAwakeFunction();
-        Debug.Log("Trying to create block object. ");
         _category |= TileObjectCategory.HitableTileObject;
     }
 
@@ -24,25 +23,11 @@ public abstract class Block : ClickableTileObject, IHitableTileobject
         List<int> hitTiles = new List<int>();
         int tileNumber = LevelManager.TilePosToId(_parentTile.TilePos);
         LevelManager.GetConnectedTiles(tileNumber, ref connectedTiles, ref hitTiles);
-        string str = "Cliked at tile: " + tileNumber + ", connected tiles are: ";
-        foreach (int tile in connectedTiles)
-        {
-            str += tile + ", ";
-        }
-        Debug.Log(str);
-
-        string strHittable = "Cliked at tile: " + tileNumber + ", hittable tiles are: ";
-        foreach (int tile in hitTiles)
-        {
-            strHittable += tile + ", ";
-        }
-        Debug.Log(strHittable);
 
         if(connectedTiles != null && connectedTiles.Count > 1)
         {
             foreach(int tileNum in connectedTiles)
             {
-                Debug.Log("Trying to destroy tile: " + tileNum);
                 LevelManager.s_Instance.OnTileDestroy(tileNum);
                 // OnDestroy?.Invoke(tileNum);
             }
@@ -52,7 +37,6 @@ public abstract class Block : ClickableTileObject, IHitableTileobject
                 Tile tile = LevelManager.s_Instance.GetTile(tileNum);
                 if(!tile.GetTileCategory().HasFlag(TileObjectCategory.MatchSensitiveObject)) continue; // We put same tiles into the list to be able to hit them multiple times but if the tile is gone-broke that means we should not do a cast
                 IMatchSensitive matchSensitiveTile = tile.ActiveTileObject() as IMatchSensitive;
-                Debug.Log("Trying to match hit tile: " + tileNum);
                 matchSensitiveTile.OnMatchHit();
             }
         }

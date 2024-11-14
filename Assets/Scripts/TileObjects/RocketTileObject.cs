@@ -5,6 +5,7 @@ using UnityEngine;
 public class RocketTileObject : ClickableTileObject, IHitableTileobject
 {
     private bool _isVertical;
+    private bool _rocketFired;
 
     public override void OnAwakeFunction()
     {
@@ -12,6 +13,12 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
         _type = TileObjectType.Rocket;
         _category |= TileObjectCategory.HitableTileObject;
         _isVertical = Random.value > 0.5f;
+    }
+
+    public override void OnEnableFunction()
+    {
+        base.OnEnableFunction();
+        _rocketFired = false;
     }
 
     public override void OnClick()
@@ -22,13 +29,14 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
 
     public void OnHit(int damage)
     {
-        // StartCoroutine(FireRocket(_parentTile.TileId));
-        // OnDestroy?.Invoke(_parentTile.TileId);
+        if(!_rocketFired) StartCoroutine(FireRocket(_parentTile.TileId));
     }
 
     IEnumerator FireRocket(int tileNum)
     {
         LevelManager.s_Instance.RunningSequences++;
+
+        _rocketFired = true;
 
         int nextTileDelta = _isVertical ? 1 : LevelManager.GridDimension;
 
@@ -46,9 +54,6 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
                 tileBPos.x -= 1;
             }
 
-            Debug.Log("Rocket was on tile: " + tileNum + " Verticality is: " + _isVertical + " Tile A is: " + tileAPos + " Tile B is: " + tileBPos);
-            
-            Debug.Log("Calling get with " + tileAPos);
             Tile tileA = LevelManager.s_Instance.GetTile(tileAPos);
             if(tileA != null && tileA.GetTileCategory().HasFlag(TileObjectCategory.HitableTileObject))
             {
@@ -56,7 +61,6 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
                 hitableTileobject.OnHit(1);
             }
             
-            Debug.Log("Calling get with " + tileBPos);
             Tile tileB = LevelManager.s_Instance.GetTile(tileBPos);
             if(tileB != null && tileB.GetTileCategory().HasFlag(TileObjectCategory.HitableTileObject))
             {
@@ -65,7 +69,6 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
             }
 
             if(tileA == null && tileB == null){
-                Debug.Log("Breaking!!!");
                 break;
             }
 
