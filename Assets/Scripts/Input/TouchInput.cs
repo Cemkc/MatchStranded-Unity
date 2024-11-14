@@ -5,12 +5,12 @@ public class TouchInput : MonoBehaviour, IInputInvoker
 {
     public UnityAction<Vector2> TouchBegan;
 
-    public void ConnectIput(LevelManager level)
+    public void ConnectIput(GridManager level)
     {
         TouchBegan += level.OnTapInput;
     }
 
-    public void DisconnectInput(LevelManager level)
+    public void DisconnectInput(GridManager level)
     {
         TouchBegan -= level.OnTapInput;
     }

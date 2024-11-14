@@ -19,12 +19,12 @@ public abstract class TileObject : MonoBehaviour
 
     public virtual void OnEnableFunction()
     {
-        OnDestroy += LevelManager.s_Instance.OnTileDestroy;
+        OnDestroy += GridManager.s_Instance.OnTileDestroy;
     }
 
     public virtual void OnDisableFunction()
     {
-        OnDestroy -= LevelManager.s_Instance.OnTileDestroy;
+        OnDestroy -= GridManager.s_Instance.OnTileDestroy;
     }
 
     #region MonoBehaviour Functions

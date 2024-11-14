@@ -7,24 +7,34 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
     private bool _isVertical;
     private bool _rocketFired;
 
+    [SerializeField] private Sprite _verticalRocketSprite;
+    [SerializeField] private Sprite _horizontalRocketSprite;
+
     public override void OnAwakeFunction()
     {
         base.OnAwakeFunction();
         _type = TileObjectType.Rocket;
         _category |= TileObjectCategory.HitableTileObject;
-        _isVertical = Random.value > 0.5f;
     }
 
     public override void OnEnableFunction()
     {
         base.OnEnableFunction();
+        _isVertical = Random.value > 0.5f;
         _rocketFired = false;
+
+        
+        SpriteRenderer spriteRenderer;
+        if(transform.TryGetComponent(out spriteRenderer))
+        {
+            if(_isVertical) spriteRenderer.sprite = _verticalRocketSprite;
+            else spriteRenderer.sprite = _horizontalRocketSprite;
+        }
     }
 
     public override void OnClick()
     {
         StartCoroutine(FireRocket(_parentTile.TileId));
-        // OnDestroy?.Invoke(_parentTile.TileId);
     }
 
     public void OnHit(int damage)
@@ -34,14 +44,14 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
 
     IEnumerator FireRocket(int tileNum)
     {
-        LevelManager.s_Instance.RunningSequences++;
+        GridManager.s_Instance.RunningSequences++;
 
         _rocketFired = true;
 
-        int nextTileDelta = _isVertical ? 1 : LevelManager.GridDimension;
+        int nextTileDelta = _isVertical ? 1 : GridManager.GridDimension;
 
-        Vector2Int tileAPos = LevelManager.TileIdToPos(tileNum);
-        Vector2Int tileBPos = LevelManager.TileIdToPos(tileNum);
+        Vector2Int tileAPos = GridManager.TileIdToPos(tileNum);
+        Vector2Int tileBPos = GridManager.TileIdToPos(tileNum);
 
         while(true)
         {
@@ -54,14 +64,14 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
                 tileBPos.x -= 1;
             }
 
-            Tile tileA = LevelManager.s_Instance.GetTile(tileAPos);
+            Tile tileA = GridManager.s_Instance.GetTile(tileAPos);
             if(tileA != null && tileA.GetTileCategory().HasFlag(TileObjectCategory.HitableTileObject))
             {
                 IHitableTileobject hitableTileobject = tileA.ActiveTileObject() as IHitableTileobject;
                 hitableTileobject.OnHit(1);
             }
             
-            Tile tileB = LevelManager.s_Instance.GetTile(tileBPos);
+            Tile tileB = GridManager.s_Instance.GetTile(tileBPos);
             if(tileB != null && tileB.GetTileCategory().HasFlag(TileObjectCategory.HitableTileObject))
             {
                 IHitableTileobject hitableTileobject = tileB.ActiveTileObject() as IHitableTileobject;
@@ -77,7 +87,7 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
 
         OnDestroy(tileNum);
 
-        LevelManager.s_Instance.RunningSequences--;
+        GridManager.s_Instance.RunningSequences--;
 
     }
 }

@@ -20,13 +20,13 @@ public class InputManager : MonoBehaviour
         _inputInvoker = inputInvokers[0];
     }
 
-    public void ConnectInput(LevelManager levelManager)
+    public void ConnectInput(GridManager levelManager)
     {
         _inputInvoker.ConnectIput(levelManager);
     }
 
     void OnDisable()
     {
-        _inputInvoker.DisconnectInput(LevelManager.s_Instance);
+        _inputInvoker.DisconnectInput(GridManager.s_Instance);
     }
 }

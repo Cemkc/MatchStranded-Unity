@@ -21,24 +21,31 @@ public abstract class Block : ClickableTileObject, IHitableTileobject
     {
         List<int> connectedTiles = new List<int>();
         List<int> hitTiles = new List<int>();
-        int tileNumber = LevelManager.TilePosToId(_parentTile.TilePos);
-        LevelManager.GetConnectedTiles(tileNumber, ref connectedTiles, ref hitTiles);
+        int tileNumber = GridManager.TilePosToId(_parentTile.TilePos);
+        GridManager.GetConnectedTiles(tileNumber, ref connectedTiles, ref hitTiles);
 
         if(connectedTiles != null && connectedTiles.Count > 1)
         {
             foreach(int tileNum in connectedTiles)
             {
-                LevelManager.s_Instance.OnTileDestroy(tileNum);
+                GridManager.s_Instance.OnTileDestroy(tileNum);
                 // OnDestroy?.Invoke(tileNum);
             }
 
             foreach (int tileNum in hitTiles)
             {
-                Tile tile = LevelManager.s_Instance.GetTile(tileNum);
+                Tile tile = GridManager.s_Instance.GetTile(tileNum);
                 if(!tile.GetTileCategory().HasFlag(TileObjectCategory.MatchSensitiveObject)) continue; // We put same tiles into the list to be able to hit them multiple times but if the tile is gone-broke that means we should not do a cast
                 IMatchSensitive matchSensitiveTile = tile.ActiveTileObject() as IMatchSensitive;
                 matchSensitiveTile.OnMatchHit();
             }
+
+            if(connectedTiles.Count >= 5)
+            {
+                Debug.Log("Trying to set tile pos: " + _parentTile.TilePos + " To rocket");
+                _parentTile.SetTile(TileObjectType.Rocket);
+            }
+
         }
     }
 

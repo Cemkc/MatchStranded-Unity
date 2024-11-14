@@ -8,16 +8,9 @@ using System.Linq;
 using Random = UnityEngine.Random;
 using UnityEngine.Events;
 
-[Serializable]
-public struct TilePrefabAttribution
+public class GridManager : MonoBehaviour
 {
-    public TileObjectType tileObjType;
-    public GameObject prefab;
-}
-
-public class LevelManager : MonoBehaviour
-{
-    public static LevelManager s_Instance;
+    public static GridManager s_Instance;
 
     public UnityAction OnFillEnd;
 
@@ -31,10 +24,6 @@ public class LevelManager : MonoBehaviour
 
     [SerializeField] private GameObject _presentTilePrefab;
     [SerializeField] private GameObject _absentTilePrefab;
-
-    [SerializeField] private TilePrefabAttribution[] _tilePrefabAttribution;
-
-    private Dictionary<TileObjectType, GameObject> _tileObjPrefabMap;
 
     private int _runningSequenceCount;
     private bool _tileDestroyed;
@@ -51,8 +40,9 @@ public class LevelManager : MonoBehaviour
 
     public static int GridDimension { get => s_Instance._gridDimension; }
     public Tile[,] TileMap { get => _tileMap; }
-    public Dictionary<TileObjectType, GameObject> TileObjPrefabMap { get => _tileObjPrefabMap; set => _tileObjPrefabMap = value; }
     public int RunningSequences { get => _runningSequenceCount; set => _runningSequenceCount = value; }
+    public float TileWidth { get => _tileWidth; }
+    public float TileHeight { get => _tileHeight; }
 
     void Awake()
     {
@@ -78,12 +68,6 @@ public class LevelManager : MonoBehaviour
 
         _fallSequenceCount = 0;
         _preFallSequenceCount = _fallSequenceCount;
-        
-        _tileObjPrefabMap = new Dictionary<TileObjectType, GameObject>();
-        foreach (TilePrefabAttribution attrib in _tilePrefabAttribution)
-        {
-            _tileObjPrefabMap[attrib.tileObjType] = attrib.prefab;
-        }
 
     }
 
@@ -113,7 +97,7 @@ public class LevelManager : MonoBehaviour
     {   
         foreach (int tile in _occcupiedPositions)
         {
-            var tileTypes = _tileObjPrefabMap.Keys.ToList();
+            var tileTypes = TileObjectGenerator.s_Instance.TileObjPrefabMap.Keys.ToList();
             tileTypes.Remove(TileObjectType.None);
             TileObjectType type = tileTypes[Random.Range(0, tileTypes.Count)];
             GetTile(tile).SetTile(type);
@@ -192,7 +176,7 @@ public class LevelManager : MonoBehaviour
         float screenWidth = screenHeight * Camera.main.aspect;
 
         // Define the play field dimensions as a portion of the screen (e.g., 80%)
-        float playFieldWidth = screenWidth * 0.8f;
+        float playFieldWidth = screenWidth * 0.95f;
         float playFieldHeight = playFieldWidth;
 
         // Center the play field in the middle of the screen
@@ -210,7 +194,7 @@ public class LevelManager : MonoBehaviour
 
     public void OnTapInput(Vector2 touchScreenPosition)
     {
-        if(_runningSequenceCount > 0) return;
+        if(_runningSequenceCount > 0 || _fallSequenceCount > 0) return;
         Ray ray = Camera.main.ScreenPointToRay(touchScreenPosition);
         RaycastHit2D hit = Physics2D.GetRayIntersection(ray);
 
@@ -260,9 +244,9 @@ public class LevelManager : MonoBehaviour
                 if(tileAbove.GetTileType() != TileObjectType.None && tileAbove.GetTileType() != TileObjectType.Absent) // Change with tile.CanFall()
                 {
                     foundTileInGrid = true;
-                    TileObjectType type = tileAbove.GetTileType();
+                    TileObject tileObject = tileAbove.ActiveTileObject();
                     tileAbove.SetTile(TileObjectType.None);
-                    StartCoroutine(FallToPosition(type, tileAbove.transform.position, tile));
+                    StartCoroutine(FallToPosition(tileObject, tile));
                     // tile.SetTile(tileAbove.GetTileType());
                     break;
                 }
@@ -271,9 +255,11 @@ public class LevelManager : MonoBehaviour
             if(!foundTileInGrid && _tileObjPool.ContainsKey(tile.TilePos.x) && _tileObjPool[tile.TilePos.x].Count > 0)
             {
                 TileObjectType type = _tileObjPool[tile.TilePos.x].Dequeue();
+                TileObject tileObject = TileObjectGenerator.s_Instance.GetTileObject(type);
                 Vector2 tilePos = GetTile(new Vector2Int(tile.TilePos.x, _gridDimension - 1)).transform.position;
-                tilePos.y += _tileHeight * 2; 
-                StartCoroutine(FallToPosition(type, tilePos, tile));
+                tilePos.y += _tileHeight * 2;
+                tileObject.transform.position = tilePos;
+                StartCoroutine(FallToPosition(tileObject, tile));
             }
 
         }
@@ -283,12 +269,11 @@ public class LevelManager : MonoBehaviour
 
     }
 
-    IEnumerator FallToPosition(TileObjectType tileObjType, Vector2 startPosition, Tile tile)
+    IEnumerator FallToPosition(TileObject tileObject, Tile tile)
     {
         _fallSequenceCount++;
 
-        GameObject tileObject = Instantiate(_tileObjPrefabMap[tileObjType], startPosition, Quaternion.identity);
-        tileObject.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        Vector2 startPosition = tileObject.transform.position;
         Vector2 targetPosition = tile.transform.position;
 
         float duration = 0.2f;
@@ -301,8 +286,7 @@ public class LevelManager : MonoBehaviour
             yield return null;
         }
         tileObject.transform.position = targetPosition; // Ensure it ends exactly at the target
-        Destroy(tileObject);
-        tile.SetTile(tileObjType);
+        tile.SetTile(tileObject);
 
         _fallSequenceCount--;
     }
@@ -416,10 +400,9 @@ public class LevelManager : MonoBehaviour
 
     public void OnTileDestroy(int tileNum)
     {
-        Debug.Log("Destroying tile: " + tileNum);
         _tileDestroyed = true;
         Tile tile = GetTile(tileNum);
-        tile.SetTile(TileObjectType.None);
+        tile.DestroyTileObject();
     }
 
 }

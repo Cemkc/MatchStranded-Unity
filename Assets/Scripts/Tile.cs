@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Flap{
@@ -11,7 +10,10 @@ namespace Flap{
         public int TileId { get => _tileId; }
 
         public abstract void Init(int col, int row);
-        public abstract void SetTile(TileObjectType type);
+        public abstract void SetTile(TileObject tileObject);
+        public abstract void SetTile(TileObjectType tileObjectType);
+        public abstract void DestroyTileObject();
+
         public abstract TileObject ActiveTileObject();
         public abstract TileObjectType GetTileType();
         public abstract TileObjectCategory GetTileCategory();

@@ -18,42 +18,38 @@ public class PresentTile : Tile
     public override void Init(int col, int row)
     {
         _tilePos = new Vector2Int(col, row);
-        _tileId = col * LevelManager.GridDimension + row;
+        _tileId = col * GridManager.GridDimension + row;
+    }
 
-        foreach (GameObject tileObject in LevelManager.s_Instance.TileObjPrefabMap.Values)
+    public override void SetTile(TileObject tileObject)
+    {
+        if(tileObject != null)
         {
-            GameObject go = Instantiate(tileObject, transform);
-            go.transform.localPosition = new Vector3(0f, 0f, -1f);
-            go.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
-            EmptyTileObject emptyTile;
-            if(go.TryGetComponent(out emptyTile)) _activeTileObject = emptyTile;
-            go.SetActive(false);
+            _activeTileObject = tileObject;
+            _activeTileObject.ParentTile = this;
+            _activeTileObject.transform.position = transform.position;
         }
     }
 
-    public override void SetTile(TileObjectType type)
+    public override void SetTile(TileObjectType tileObjectType)
     {
-        if(_activeTileObject != null && type == _activeTileObject.Type)
-        {
-            return;
-        }
-
-        TileObject[] tileObjects = GetComponentsInChildren<TileObject>(includeInactive: true);
-        foreach (TileObject tileObject in tileObjects)
-        {
-            if(tileObject.Type == type)
-            {
-                if(_activeTileObject != null) _activeTileObject.gameObject.SetActive(false);
-                _activeTileObject = tileObject;
-                _activeTileObject.ParentTile = this;
-                _activeTileObject.gameObject.SetActive(true);
-            } 
-        }
+        Debug.Log("Generating tile object the with given type " + tileObjectType);
+        TileObject tileObject = TileObjectGenerator.s_Instance.GetTileObject(tileObjectType);
+        SetTile(tileObject);
     }
 
     public override TileObject ActiveTileObject()
     {
         return _activeTileObject;
+    }
+
+    public override void DestroyTileObject()
+    {
+        if(_activeTileObject != null || _activeTileObject.Type != TileObjectType.None || _activeTileObject.Type != TileObjectType.Absent)
+        {
+            TileObjectGenerator.s_Instance.ReturnTileObject(_activeTileObject);
+            _activeTileObject = TileObjectGenerator.s_Instance.GetTileObject(TileObjectType.None);
+        } 
     }
 
     public override void OnHit()

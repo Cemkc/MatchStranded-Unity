@@ -14,7 +14,6 @@ public class BalloonTileObject : TileObject, IHitableTileobject, IMatchSensitive
 
     public void OnHit(int damage)
     {
-        Debug.Log("Health: " + _health + ", Damage: " + damage);
         _health -= damage;
 
         if(_health <= 0){
