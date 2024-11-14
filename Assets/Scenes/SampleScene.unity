@@ -538,8 +538,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c870b1bf04fe31341843203deb8c9b4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _gridDimension: 6
   _gridBlueprint: {fileID: 11400000, guid: 571f5fd2c403d344983199c422ed146f, type: 2}
+  _gridDimension: 6
+  _occcupiedPositions: 
   _presentTilePrefab: {fileID: 8211843544728404218, guid: fa3d157936b2fc24893dbff02ca62bb5, type: 3}
   _absentTilePrefab: {fileID: 8211843544728404218, guid: 6dee24bf8f878654aaa62ed88d91677a, type: 3}
   _tilePrefabAttribution:
@@ -557,6 +558,10 @@ MonoBehaviour:
     prefab: {fileID: 6835588470268470269, guid: 5bb11079c7de5f54b8b1a0d618131fbe, type: 3}
   - tileObjType: 7
     prefab: {fileID: 6835588470268470269, guid: e0ce66a3a45cfd64eb01f2bc30f7966f, type: 3}
+  - tileObjType: 7
+    prefab: {fileID: 6835588470268470269, guid: e0ce66a3a45cfd64eb01f2bc30f7966f, type: 3}
+  - tileObjType: 8
+    prefab: {fileID: 6835588470268470269, guid: 40ce81c5d633a6a428d9a45958cf9e16, type: 3}
 --- !u!4 &1470740072
 Transform:
   m_ObjectHideFlags: 0

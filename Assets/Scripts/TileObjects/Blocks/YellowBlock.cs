@@ -1,9 +1,9 @@
 
 public class YellowBlock : Block
 {
-    public override void Init()
+    public override void OnAwakeFunction()
     {
-        base.Init();
+        base.OnAwakeFunction();
         _type = TileObjectType.Yellow;
     }
 }

@@ -5,8 +5,10 @@ namespace Flap{
     public abstract class Tile : MonoBehaviour
     {
         protected Vector2Int _tilePos;
+        protected int _tileId;
 
         public Vector2Int TilePos { get => _tilePos; }
+        public int TileId { get => _tileId; }
 
         public abstract void Init(int col, int row);
         public abstract void SetTile(TileObjectType type);

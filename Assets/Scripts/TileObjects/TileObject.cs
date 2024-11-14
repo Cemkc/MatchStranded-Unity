@@ -1,25 +1,48 @@
 using UnityEngine;
 using Flap;
 using System;
+using UnityEngine.Events;
 
 public abstract class TileObject : MonoBehaviour
 {
-    public abstract void Init();
+    protected UnityAction<int> OnDestroy;
 
     protected Tile _parentTile;
     protected TileObjectType _type;
     protected TileObjectCategory _category;
-    protected bool _clickable;
 
     public Tile ParentTile{ get => _parentTile; set => _parentTile = value; }
     public TileObjectType Type{ get => _type; }
     public TileObjectCategory Category{ get => _category; }
-    public bool Clickable{ get => _clickable; }
 
+    public virtual void OnAwakeFunction(){}
+
+    public virtual void OnEnableFunction()
+    {
+        OnDestroy += LevelManager.s_Instance.OnTileDestroy;
+    }
+
+    public virtual void OnDisableFunction()
+    {
+        OnDestroy -= LevelManager.s_Instance.OnTileDestroy;
+    }
+
+    #region MonoBehaviour Functions
     void Awake()
     {
-        Init();
+        OnAwakeFunction();
     }
+
+    void OnEnable()
+    {
+        OnEnableFunction();
+    }
+
+    void OnDisable()
+    {
+        OnDisableFunction();
+    }
+    #endregion
 }
 
 public enum TileObjectType
@@ -31,15 +54,19 @@ public enum TileObjectType
     Green,
     Yellow,
     Purple,
-    Balloon
+    Balloon,
+    Rocket,
+    Duck
 }
 
 [Flags]
 public enum TileObjectCategory
 {
     Absent = 0,
-    HittableTileObject = 1 << 0,
-    ConstantTileObject = 1 << 1,
-    ClickableTileObject = 1 << 2,
-    FallableTileObject = 1 << 3
+    None = 1 << 0,
+    HitableTileObject = 1 << 1,
+    ConstantTileObject = 1 << 2,
+    ClickableTileObject = 1 << 3,
+    FallableTileObject = 1 << 4,
+    MatchSensitiveObject = 1 << 5
 }

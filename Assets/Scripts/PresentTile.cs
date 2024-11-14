@@ -18,13 +18,14 @@ public class PresentTile : Tile
     public override void Init(int col, int row)
     {
         _tilePos = new Vector2Int(col, row);
+        _tileId = col * LevelManager.GridDimension + row;
 
         foreach (GameObject tileObject in LevelManager.s_Instance.TileObjPrefabMap.Values)
         {
             GameObject go = Instantiate(tileObject, transform);
             go.transform.localPosition = new Vector3(0f, 0f, -1f);
             go.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
-            EmptyTile emptyTile;
+            EmptyTileObject emptyTile;
             if(go.TryGetComponent(out emptyTile)) _activeTileObject = emptyTile;
             go.SetActive(false);
         }
