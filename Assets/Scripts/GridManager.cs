@@ -25,6 +25,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject _presentTilePrefab;
     [SerializeField] private GameObject _absentTilePrefab;
 
+    [SerializeField] private RectTransform _playfieldRectTransform;
+
     private int _runningSequenceCount;
     private bool _tileDestroyed;
     
@@ -33,7 +35,7 @@ public class GridManager : MonoBehaviour
 
     private Tile[,] _tileMap;
 
-    private Rect _playField;
+    private Rect _playFieldRect;
 
     private float _tileWidth;
     private float _tileHeight;
@@ -130,11 +132,13 @@ public class GridManager : MonoBehaviour
 
     void GenerateTileMap()
     {
-        SetPlayField();
+        _playFieldRect = GetWorldSpaceRect(_playfieldRectTransform);
+        _tileWidth = _playFieldRect.width / _gridDimension;
+        _tileHeight = _playFieldRect.height / _gridDimension;
 
         Vector2 startPosition = new Vector2(
-            _playField.xMin + _tileWidth / 2,
-            _playField.yMin + _tileHeight / 2
+            _playFieldRect.xMin + _tileWidth / 2,
+            _playFieldRect.yMin + _tileHeight / 2
         );
 
         for(int col = 0; col < _tileMap.GetLength(0); col++)
@@ -180,16 +184,37 @@ public class GridManager : MonoBehaviour
         float playFieldHeight = playFieldWidth;
 
         // Center the play field in the middle of the screen
-        _playField = new Rect(
+        _playFieldRect = new Rect(
             -playFieldWidth / 2,  // x position
             -playFieldHeight / 2, // y position
             playFieldWidth,
             playFieldHeight
         );
 
-        _tileWidth = _playField.width / _gridDimension;
-        _tileHeight = _playField.height / _gridDimension;
+        _tileWidth = _playFieldRect.width / _gridDimension;
+        _tileHeight = _playFieldRect.height / _gridDimension;
 
+    }
+
+    Rect GetWorldSpaceRect(RectTransform rectTransform)
+    {
+        // Get the corners of the RectTransform in world space
+        Vector3[] corners = new Vector3[4];
+        rectTransform.GetWorldCorners(corners);
+
+        for (int i = 0; i < corners.Length; i++)
+        {
+            Debug.Log("World (Screen): " + corners[i]);
+            corners[i] = Camera.main.ScreenToWorldPoint(corners[i]);
+            Debug.Log("World (for real): " + corners[i]);
+        }
+
+        // Calculate width and height from corners
+        float width = Vector3.Distance(corners[0], corners[3]);
+        float height = Vector3.Distance(corners[0], corners[1]);
+
+        // Return a Rect with the bottom-left corner as the starting position, and the calculated width and height
+        return new Rect(corners[0].x, corners[0].y, width, height);
     }
 
     public void OnTapInput(Vector2 touchScreenPosition)
@@ -293,8 +318,8 @@ public class GridManager : MonoBehaviour
 
     private Vector2 GridToWorldPosition(int col, int row)
     {
-        float x = _playField.xMin + col * _tileWidth - _tileWidth / 2;
-        float y = _playField.yMin + row * _tileHeight - _tileHeight / 2;
+        float x = _playFieldRect.xMin + col * _tileWidth - _tileWidth / 2;
+        float y = _playFieldRect.yMin + row * _tileHeight - _tileHeight / 2;
 
         return new Vector2(x, y);
     }

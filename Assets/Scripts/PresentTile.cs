@@ -33,7 +33,6 @@ public class PresentTile : Tile
 
     public override void SetTile(TileObjectType tileObjectType)
     {
-        Debug.Log("Generating tile object the with given type " + tileObjectType);
         TileObject tileObject = TileObjectGenerator.s_Instance.GetTileObject(tileObjectType);
         SetTile(tileObject);
     }
