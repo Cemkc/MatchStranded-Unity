@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Grid Blueprint", menuName = "Scriptable Objects / Grid Blueprint")]
+[CreateAssetMenu(fileName = "Grid Blueprint", menuName = "Scriptable Objects/Grid Blueprint")]
 public class GridBlueprint : ScriptableObject
 {
     [Serializable]

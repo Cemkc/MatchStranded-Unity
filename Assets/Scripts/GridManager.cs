@@ -27,6 +27,8 @@ public class GridManager : MonoBehaviour
 
     [SerializeField] private RectTransform _playfieldRectTransform;
 
+    [SerializeField] private GameSettings _gameSettings;
+
     private int _runningSequenceCount;
     private bool _tileDestroyed;
     
@@ -45,6 +47,132 @@ public class GridManager : MonoBehaviour
     public int RunningSequences { get => _runningSequenceCount; set => _runningSequenceCount = value; }
     public float TileWidth { get => _tileWidth; }
     public float TileHeight { get => _tileHeight; }
+
+    #region Utility functions
+
+    public static IEnumerator MoveTileObjectToPosition(TileObject tileObject, Vector3 targetPosition, TileMoveAnimation animation)
+    {
+        float elapsedTime = 0f;
+
+        Vector3 startPosition = tileObject.transform.position;
+
+        Vector3 initialScale = tileObject.transform.localScale;
+
+        while (elapsedTime < animation.blockToGoalDuration)
+        {
+            // Calculate normalized time [0, 1]
+            float normalizedTime = elapsedTime / animation.blockToGoalDuration;
+
+            // Interpolate position
+            float positionFactor = animation.blockToGoalMoveCurve.Evaluate(normalizedTime);
+            Debug.Log(positionFactor);
+            tileObject.transform.position = Vector3.Lerp(startPosition, targetPosition, positionFactor);
+
+            // Interpolate scale
+            float scaleFactor = animation.blockToGoalScaleCurve.Evaluate(normalizedTime);
+            tileObject.transform.localScale = initialScale * scaleFactor;
+
+            // Increment time
+            elapsedTime += Time.deltaTime;
+
+            yield return null;
+        }
+
+        // Ensure the final position and scale are set
+        tileObject.transform.position = targetPosition;
+        tileObject.transform.localScale = initialScale * animation.blockToGoalScaleCurve.Evaluate(1f);
+    }
+
+    public static Vector2 GridToWorldPosition(int col, int row)
+    {
+        float x = s_Instance._playFieldRect.xMin + s_Instance._tileWidth / 2 + col * s_Instance._tileWidth;
+        float y = s_Instance._playFieldRect.yMin + s_Instance._tileHeight / 2 + row * s_Instance._tileHeight ;
+
+        return new Vector2(x, y);
+    }
+
+    public static void GetConnectedTiles(int tile, ref List<int> connectedTiles, ref List<int> hittableTilesOnEdge, int previousTile = -1)
+    {
+        List<int> adjacentTiles = GetAdjacentTiles(tile);
+
+        if(previousTile == -1)
+        {
+            connectedTiles.Add(tile);
+        }
+        
+        foreach (int adjacentTile in adjacentTiles)
+        {
+            if(adjacentTile == previousTile)
+            {
+                continue;
+            }
+            TileObjectType selfType = s_Instance.GetTile(tile).GetTileType();
+            TileObjectType adjacentType = s_Instance.GetTile(adjacentTile).GetTileType();
+            if(selfType == adjacentType && adjacentType != TileObjectType.Absent)
+            {
+                if(!connectedTiles.Contains(adjacentTile))
+                {
+                    connectedTiles.Add(adjacentTile);
+                    GetConnectedTiles(adjacentTile, ref connectedTiles, ref hittableTilesOnEdge, tile);
+                }
+            }
+            else if(s_Instance.GetTile(adjacentTile).GetTileCategory().HasFlag(TileObjectCategory.HitableTileObject))
+            {
+                hittableTilesOnEdge.Add(adjacentTile);
+            }
+        }
+
+        return;
+    }
+
+    public static List<int> GetAdjacentTiles(int tile)
+    {
+        List<int> adjacentTiles = new List<int>();
+
+        // Calculate row and column of the given tile
+        int row = tile % GridDimension;
+        int col = tile / GridDimension;
+
+        // Check above (row + 1)
+        if (row + 1 < GridDimension && s_Instance.GetTile(tile + 1).GetTileType() != TileObjectType.Absent)
+        {
+            adjacentTiles.Add(tile + 1);
+        }
+
+        // Check below (row - 1)
+        if (row - 1 >= 0 && s_Instance.GetTile(tile -1).GetTileType() != TileObjectType.Absent)
+        {
+            adjacentTiles.Add(tile -1);
+        }
+
+        // Check right (col + 1)
+        if (col + 1 < GridDimension && s_Instance.GetTile(tile + GridDimension).GetTileType() != TileObjectType.Absent)
+        {
+            adjacentTiles.Add(tile + GridDimension);
+        }
+
+        // Check left (col - 1)
+        if (col - 1 >= 0 && s_Instance.GetTile(tile - GridDimension).GetTileType() != TileObjectType.Absent)
+        {
+            adjacentTiles.Add(tile - GridDimension);
+        }
+
+        return adjacentTiles;
+    }
+
+    public static int TilePosToId(Vector2Int pos)
+    {
+        return GridDimension * pos.x + pos.y;
+    }
+
+    public static Vector2Int TileIdToPos(int id)
+    {
+        int col = id / s_Instance._gridDimension;
+        int row = id % s_Instance._gridDimension;
+        return new Vector2Int(col, row);
+    }
+
+    #endregion
 
     void Awake()
     {
@@ -273,99 +401,10 @@ public class GridManager : MonoBehaviour
     {
         _fallSequenceCount++;
 
-        Vector2 startPosition = tileObject.transform.position;
-        Vector2 targetPosition = tile.transform.position;
-
-        float duration = 0.2f;
-        float elapsed = 0;
-
-        while (elapsed < duration)
-        {
-            tileObject.transform.position = Vector2.Lerp(startPosition, targetPosition, elapsed / duration);
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-        tileObject.transform.position = targetPosition; // Ensure it ends exactly at the target
+        yield return StartCoroutine(MoveTileObjectToPosition(tileObject, GridToWorldPosition(tile.TilePos.x, tile.TilePos.y), GameManager.Settings.FallAnimation));
         tile.SetTile(tileObject);
 
         _fallSequenceCount--;
-    }
-
-    private Vector2 GridToWorldPosition(int col, int row)
-    {
-        float x = _playFieldRect.xMin + col * _tileWidth - _tileWidth / 2;
-        float y = _playFieldRect.yMin + row * _tileHeight - _tileHeight / 2;
-
-        return new Vector2(x, y);
-    }
-
-    public static void GetConnectedTiles(int tile, ref List<int> connectedTiles, ref List<int> hittableTilesOnEdge, int previousTile = -1)
-    {
-        List<int> adjacentTiles = GetAdjacentTiles(tile);
-
-        if(previousTile == -1)
-        {
-            connectedTiles.Add(tile);
-        }
-        
-        foreach (int adjacentTile in adjacentTiles)
-        {
-            if(adjacentTile == previousTile)
-            {
-                continue;
-            }
-            TileObjectType selfType = s_Instance.GetTile(tile).GetTileType();
-            TileObjectType adjacentType = s_Instance.GetTile(adjacentTile).GetTileType();
-            if(selfType == adjacentType && adjacentType != TileObjectType.Absent)
-            {
-                if(!connectedTiles.Contains(adjacentTile))
-                {
-                    connectedTiles.Add(adjacentTile);
-                    GetConnectedTiles(adjacentTile, ref connectedTiles, ref hittableTilesOnEdge, tile);
-                }
-            }
-            else if(s_Instance.GetTile(adjacentTile).GetTileCategory().HasFlag(TileObjectCategory.HitableTileObject))
-            {
-                hittableTilesOnEdge.Add(adjacentTile);
-            }
-        }
-
-        return;
-    }
-
-    public static List<int> GetAdjacentTiles(int tile)
-    {
-        List<int> adjacentTiles = new List<int>();
-
-        // Calculate row and column of the given tile
-        int row = tile % GridDimension;
-        int col = tile / GridDimension;
-
-        // Check above (row + 1)
-        if (row + 1 < GridDimension && s_Instance.GetTile(tile + 1).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile + 1);
-        }
-
-        // Check below (row - 1)
-        if (row - 1 >= 0 && s_Instance.GetTile(tile -1).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile -1);
-        }
-
-        // Check right (col + 1)
-        if (col + 1 < GridDimension && s_Instance.GetTile(tile + GridDimension).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile + GridDimension);
-        }
-
-        // Check left (col - 1)
-        if (col - 1 >= 0 && s_Instance.GetTile(tile - GridDimension).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile - GridDimension);
-        }
-
-        return adjacentTiles;
     }
 
     public Tile GetTile(Vector2Int tilePos)
@@ -386,18 +425,6 @@ public class GridManager : MonoBehaviour
         return _tileMap[tileNum / _gridDimension, tileNum % _gridDimension];
     }
 
-    public static int TilePosToId(Vector2Int pos)
-    {
-        return GridDimension * pos.x + pos.y;
-    }
-
-    public static Vector2Int TileIdToPos(int id)
-    {
-        int col = id / s_Instance._gridDimension;
-        int row = id % s_Instance._gridDimension;
-        return new Vector2Int(col, row);
-    }
-
     public void OnTileDestroy(Tile tile, TileObject tileObject)
     {
         _tileDestroyed = true;
@@ -410,6 +437,13 @@ public class GridManager : MonoBehaviour
         if(tileObject.Category.HasFlag(TileObjectCategory.ParticleEmittingTileobject)){
             tile.PlayParticle((tileObject as IParticleEmitting).GetParticleName());
         }
+
+        // if(LevelManager.s_Instance.CountsTowardsGoal(tileObject)){
+        //     tile.SetTile(TileObjectType.None);
+        // }
+        // else{
+        //     tile.DestroyTileObject();
+        // }
 
         tile.DestroyTileObject();
     }
