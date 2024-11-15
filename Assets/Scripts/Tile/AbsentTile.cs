@@ -32,6 +32,11 @@ public class AbsentTile : Tile
     {
     }
 
+    public override void PlayParticle(ParticleName particleName)
+    {
+        throw new System.NotImplementedException();
+    }
+
     public override void SetTile(TileObject tileObject)
     {
         Debug.Log("Setting an absent tile is not allowed.");

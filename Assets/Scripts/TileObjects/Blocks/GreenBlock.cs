@@ -1,3 +1,4 @@
+using UnityEngine;
 
 public class GreenBlock : Block
 {
@@ -5,5 +6,10 @@ public class GreenBlock : Block
     {
         base.OnAwakeFunction();
         _type = TileObjectType.Green;
+    }
+
+    public override Color GetParticleColor()
+    {
+        return Color.green;
     }
 }

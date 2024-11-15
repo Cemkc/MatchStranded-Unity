@@ -6,6 +6,12 @@ namespace Flap{
         protected Vector2Int _tilePos;
         protected int _tileId;
 
+        void Awake(){
+            OnAwake();
+        }
+
+        protected virtual void OnAwake(){}
+
         public Vector2Int TilePos { get => _tilePos; }
         public int TileId { get => _tileId; }
 
@@ -18,5 +24,7 @@ namespace Flap{
         public abstract TileObjectType GetTileType();
         public abstract TileObjectCategory GetTileCategory();
         public abstract void OnHit();
+
+        public abstract void PlayParticle(ParticleName particleName);
     }
 }

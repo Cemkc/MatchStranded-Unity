@@ -1,3 +1,4 @@
+using UnityEngine;
 
 public class RedBlock : Block
 {
@@ -5,5 +6,10 @@ public class RedBlock : Block
     {
         base.OnAwakeFunction();
         _type = TileObjectType.Red;
+    }
+
+    public override Color GetParticleColor()
+    {
+        return Color.red;
     }
 }

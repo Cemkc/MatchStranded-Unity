@@ -1,9 +1,28 @@
 using UnityEngine;
 using Flap;
+using UnityEngine.U2D;
+using System.Collections.Generic;
 
 public class PresentTile : Tile
 {
     private TileObject _activeTileObject;
+
+    [SerializeField] private Particle[] _particles;
+    private Dictionary<ParticleName, Particle> _particleDict;
+
+    protected override void OnAwake()
+    {
+        base.OnAwake();
+
+        _particleDict = new Dictionary<ParticleName, Particle>();
+
+        foreach (var particle in _particles)
+        {
+            if(!_particleDict.ContainsKey(particle.particleName)){
+                _particleDict[particle.particleName] = particle;
+            }
+        }
+    }
 
     public override TileObjectType GetTileType()
     {
@@ -53,6 +72,11 @@ public class PresentTile : Tile
 
     public override void OnHit()
     {
+        
+    }
 
+    public override void PlayParticle(ParticleName particleName)
+    {
+        _particleDict[particleName].Play();
     }
 }

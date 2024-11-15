@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class BalloonTileObject : TileObject, IHitableTileobject, IMatchSensitive
+public class BalloonTileObject : TileObject, IHitableTileobject, IMatchSensitive, IAudible
 {
     private int _health;
 
@@ -9,7 +9,8 @@ public class BalloonTileObject : TileObject, IHitableTileobject, IMatchSensitive
         base.OnAwakeFunction();
         _health = 1;
         _type = TileObjectType.Balloon;
-        _category = TileObjectCategory.HitableTileObject | TileObjectCategory.FallableTileObject | TileObjectCategory.MatchSensitiveObject;
+        _category = TileObjectCategory.HitableTileObject | TileObjectCategory.FallableTileObject
+                    | TileObjectCategory.MatchSensitiveObject | TileObjectCategory.AudibleTileObject;
     }
 
     public void OnHit(int damage)
@@ -17,12 +18,17 @@ public class BalloonTileObject : TileObject, IHitableTileobject, IMatchSensitive
         _health -= damage;
 
         if(_health <= 0){
-            OnDestroy?.Invoke(_parentTile.TileId);
+            OnDestroy?.Invoke(_parentTile, this);
         }
     }
 
     public void OnMatchHit()
     {
         OnHit(1);
+    }
+
+    public AudioName GetAudioName()
+    {
+        return AudioName.Balloon;
     }
 }

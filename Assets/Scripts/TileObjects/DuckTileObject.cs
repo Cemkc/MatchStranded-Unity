@@ -1,12 +1,12 @@
 using UnityEngine;
 
-public class DuckTileObject : TileObject
+public class DuckTileObject : TileObject, IAudible
 {
     public override void OnAwakeFunction()
     {
         base.OnAwakeFunction();
         _type = TileObjectType.Duck;
-        _category |= TileObjectCategory.FallableTileObject;
+        _category |= TileObjectCategory.FallableTileObject | TileObjectCategory.AudibleTileObject;
     }
 
     public override void OnEnableFunction()
@@ -24,8 +24,12 @@ public class DuckTileObject : TileObject
     {
         if(_parentTile.TilePos.y == 0)
         {
-            OnDestroy?.Invoke(_parentTile.TileId);
+            OnDestroy?.Invoke(_parentTile, this);
         }
     }
 
+    public AudioName GetAudioName()
+    {
+        return AudioName.Duck;
+    }
 }

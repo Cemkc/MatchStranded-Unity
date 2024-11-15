@@ -2,13 +2,13 @@ using UnityEngine;
 using System.Collections.Generic;
 using Flap;
 
-public abstract class Block : ClickableTileObject, IHitableTileobject
+public abstract class Block : ClickableTileObject, IHitableTileobject, IAudible, IParticleEmitting
 {
     protected int _health;
 
     public override void OnAwakeFunction(){
         base.OnAwakeFunction();
-        _category |= TileObjectCategory.HitableTileObject;
+        _category |= TileObjectCategory.HitableTileObject | TileObjectCategory.AudibleTileObject | TileObjectCategory.ParticleEmittingTileobject;
     }
 
     public override void OnEnableFunction()
@@ -28,7 +28,8 @@ public abstract class Block : ClickableTileObject, IHitableTileobject
         {
             foreach(int tileNum in connectedTiles)
             {
-                GridManager.s_Instance.OnTileDestroy(tileNum);
+                Tile tile = GridManager.s_Instance.GetTile(tileNum); // Not that great of a way to to this too many back and forth commuincation and dependency
+                GridManager.s_Instance.OnTileDestroy(tile, this);
                 // OnDestroy?.Invoke(tileNum);
             }
 
@@ -55,7 +56,19 @@ public abstract class Block : ClickableTileObject, IHitableTileobject
 
         if(_health <= 0){
             // Init(); // To reset the variables (not sure if it is a good way to do that)
-            OnDestroy?.Invoke(_parentTile.TileId);
+            OnDestroy?.Invoke(_parentTile, this);
         }
     }
+
+    public AudioName GetAudioName()
+    {
+        return AudioName.CubeExplode;
+    }
+
+    public ParticleName GetParticleName()
+    {
+        return ParticleName.CubeExplode;
+    }
+
+    public abstract Color GetParticleColor();
 }

@@ -173,29 +173,6 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    void SetPlayField()
-    {
-        // Calculate screen dimensions in Unity units using an orthographic camera
-        float screenHeight = Camera.main.orthographicSize * 2;
-        float screenWidth = screenHeight * Camera.main.aspect;
-
-        // Define the play field dimensions as a portion of the screen (e.g., 80%)
-        float playFieldWidth = screenWidth * 0.95f;
-        float playFieldHeight = playFieldWidth;
-
-        // Center the play field in the middle of the screen
-        _playFieldRect = new Rect(
-            -playFieldWidth / 2,  // x position
-            -playFieldHeight / 2, // y position
-            playFieldWidth,
-            playFieldHeight
-        );
-
-        _tileWidth = _playFieldRect.width / _gridDimension;
-        _tileHeight = _playFieldRect.height / _gridDimension;
-
-    }
-
     Rect GetWorldSpaceRect(RectTransform rectTransform)
     {
         // Get the corners of the RectTransform in world space
@@ -204,9 +181,7 @@ public class GridManager : MonoBehaviour
 
         for (int i = 0; i < corners.Length; i++)
         {
-            Debug.Log("World (Screen): " + corners[i]);
             corners[i] = Camera.main.ScreenToWorldPoint(corners[i]);
-            Debug.Log("World (for real): " + corners[i]);
         }
 
         // Calculate width and height from corners
@@ -423,10 +398,19 @@ public class GridManager : MonoBehaviour
         return new Vector2Int(col, row);
     }
 
-    public void OnTileDestroy(int tileNum)
+    public void OnTileDestroy(Tile tile, TileObject tileObject)
     {
         _tileDestroyed = true;
-        Tile tile = GetTile(tileNum);
+
+        if(tileObject.Category.HasFlag(TileObjectCategory.AudibleTileObject)){
+            AudioName audio = (tileObject as IAudible).GetAudioName();
+            AudioManager.s_Instance.Play(audio);
+        }
+
+        if(tileObject.Category.HasFlag(TileObjectCategory.ParticleEmittingTileobject)){
+            tile.PlayParticle((tileObject as IParticleEmitting).GetParticleName());
+        }
+
         tile.DestroyTileObject();
     }
 

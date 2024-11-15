@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 public abstract class TileObject : MonoBehaviour
 {
-    protected UnityAction<int> OnDestroy;
+    protected UnityAction<Tile, TileObject> OnDestroy;
 
     protected Tile _parentTile;
     protected TileObjectType _type;
@@ -68,5 +68,7 @@ public enum TileObjectCategory
     ConstantTileObject = 1 << 2,
     ClickableTileObject = 1 << 3,
     FallableTileObject = 1 << 4,
-    MatchSensitiveObject = 1 << 5
+    MatchSensitiveObject = 1 << 5,
+    AudibleTileObject = 1 << 6,
+    ParticleEmittingTileobject = 1 << 7
 }

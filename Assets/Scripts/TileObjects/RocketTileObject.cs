@@ -85,7 +85,7 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
             yield return new WaitForSeconds(0.05f);
         }
 
-        OnDestroy(tileNum);
+        OnDestroy(_parentTile, this);
 
         GridManager.s_Instance.RunningSequences--;
 
