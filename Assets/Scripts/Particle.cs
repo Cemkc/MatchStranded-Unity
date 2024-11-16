@@ -19,7 +19,6 @@ public class Particle
 
     public void Play()
     {
-        Debug.Log("Trying to play the particle effect! ");
         _particleSystem.Play();
     }
 

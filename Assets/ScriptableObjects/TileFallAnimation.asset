@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d1e6e0316f19c24f8914812d82c611e, type: 3}
   m_Name: TileFallAnimation
   m_EditorClassIdentifier: 
-  blockToGoalDuration: 1
+  blockToGoalDuration: 0.2
   blockToGoalScaleCurve:
     serializedVersion: 2
     m_Curve:
@@ -42,9 +42,9 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
@@ -52,8 +52,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 0
-      outSlope: 0
+      inSlope: 1
+      outSlope: 1
       tangentMode: 34
       weightedMode: 0
       inWeight: 0

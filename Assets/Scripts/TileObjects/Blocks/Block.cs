@@ -29,7 +29,7 @@ public abstract class Block : ClickableTileObject, IHitableTileobject, IAudible,
             foreach(int tileNum in connectedTiles)
             {
                 Tile tile = GridManager.s_Instance.GetTile(tileNum); // Not that great of a way to to this too many back and forth commuincation and dependency
-                GridManager.s_Instance.OnTileDestroy(tile, this);
+                GridManager.s_Instance.OnTileDestroy(tile, tile.ActiveTileObject());
                 // OnDestroy?.Invoke(tileNum);
             }
 

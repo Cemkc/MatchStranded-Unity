@@ -65,7 +65,6 @@ public class GridManager : MonoBehaviour
 
             // Interpolate position
             float positionFactor = animation.blockToGoalMoveCurve.Evaluate(normalizedTime);
-            Debug.Log(positionFactor);
             tileObject.transform.position = Vector3.Lerp(startPosition, targetPosition, positionFactor);
 
             // Interpolate scale
@@ -303,21 +302,18 @@ public class GridManager : MonoBehaviour
 
     Rect GetWorldSpaceRect(RectTransform rectTransform)
     {
-        // Get the corners of the RectTransform in world space
         Vector3[] corners = new Vector3[4];
         rectTransform.GetWorldCorners(corners);
 
-        for (int i = 0; i < corners.Length; i++)
-        {
-            corners[i] = Camera.main.ScreenToWorldPoint(corners[i]);
-        }
+        // Bottom-left corner
+        Vector3 bottomLeft = corners[0];
+        // Top-right corner
+        Vector3 topRight = corners[2];
 
-        // Calculate width and height from corners
-        float width = Vector3.Distance(corners[0], corners[3]);
-        float height = Vector3.Distance(corners[0], corners[1]);
+        float width = Mathf.Abs(topRight.x - bottomLeft.x);
+        float height = Mathf.Abs(topRight.y - bottomLeft.y);
 
-        // Return a Rect with the bottom-left corner as the starting position, and the calculated width and height
-        return new Rect(corners[0].x, corners[0].y, width, height);
+        return new Rect(bottomLeft.x, bottomLeft.y, width, height);
     }
 
     public void OnTapInput(Vector2 touchScreenPosition)
@@ -401,7 +397,7 @@ public class GridManager : MonoBehaviour
     {
         _fallSequenceCount++;
 
-        yield return StartCoroutine(MoveTileObjectToPosition(tileObject, GridToWorldPosition(tile.TilePos.x, tile.TilePos.y), GameManager.Settings.FallAnimation));
+        yield return StartCoroutine(MoveTileObjectToPosition(tileObject, GridToWorldPosition(tile.TilePos.x, tile.TilePos.y), LevelManager.Settings.FallAnimation));
         tile.SetTile(tileObject);
 
         _fallSequenceCount--;
@@ -438,14 +434,12 @@ public class GridManager : MonoBehaviour
             tile.PlayParticle((tileObject as IParticleEmitting).GetParticleName());
         }
 
-        // if(LevelManager.s_Instance.CountsTowardsGoal(tileObject)){
-        //     tile.SetTile(TileObjectType.None);
-        // }
-        // else{
-        //     tile.DestroyTileObject();
-        // }
-
-        tile.DestroyTileObject();
+        if(LevelManager.s_Instance.CountsTowardsGoal(tileObject)){
+            tile.SetTile(TileObjectType.None);
+        }
+        else{
+            tile.DestroyTileObject();
+        }
     }
 
 }
