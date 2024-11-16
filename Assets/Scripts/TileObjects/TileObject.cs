@@ -5,7 +5,7 @@ using UnityEngine.Events;
 
 public abstract class TileObject : MonoBehaviour
 {
-    protected UnityAction<Tile, TileObject> OnDestroy;
+    public UnityAction<Tile, TileObject> OnDestroy;
 
     protected Tile _parentTile;
     protected TileObjectType _type;

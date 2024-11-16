@@ -1,6 +1,5 @@
 using UnityEngine;
 using Flap;
-using UnityEngine.U2D;
 using System.Collections.Generic;
 
 public class PresentTile : Tile
@@ -40,20 +39,21 @@ public class PresentTile : Tile
         _tileId = col * GridManager.GridDimension + row;
     }
 
-    public override void SetTile(TileObject tileObject)
+    public override void SetTileObject(TileObject tileObject)
     {
         if(tileObject != null)
         {
+            if(_activeTileObject != null) _activeTileObject.ParentTile = null;
             _activeTileObject = tileObject;
             _activeTileObject.ParentTile = this;
             _activeTileObject.transform.position = transform.position;
         }
     }
 
-    public override void SetTile(TileObjectType tileObjectType)
+    public override void SetTileObject(TileObjectType tileObjectType)
     {
         TileObject tileObject = TileObjectGenerator.s_Instance.GetTileObject(tileObjectType);
-        SetTile(tileObject);
+        SetTileObject(tileObject);
     }
 
     public override TileObject ActiveTileObject()
@@ -68,11 +68,6 @@ public class PresentTile : Tile
             TileObjectGenerator.s_Instance.ReturnTileObject(_activeTileObject);
             _activeTileObject = TileObjectGenerator.s_Instance.GetTileObject(TileObjectType.None);
         } 
-    }
-
-    public override void OnHit()
-    {
-        
     }
 
     public override void PlayParticle(ParticleName particleName)

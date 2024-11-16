@@ -22,7 +22,7 @@ public class DuckTileObject : TileObject, IAudible
 
     private void FillEndCallback()
     {
-        if(_parentTile.TilePos.y == 0)
+        if(_parentTile != null && _parentTile.TilePos.y == 0)
         {
             OnDestroy?.Invoke(_parentTile, this);
         }

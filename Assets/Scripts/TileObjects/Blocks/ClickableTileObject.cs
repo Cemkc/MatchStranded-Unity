@@ -1,7 +1,7 @@
 
 public abstract class ClickableTileObject : TileObject
 {
-    public abstract void OnClick();
+    public abstract bool OnClick();
 
     public override void OnAwakeFunction()
     {

@@ -17,20 +17,21 @@ public abstract class Block : ClickableTileObject, IHitableTileobject, IAudible,
         _health = 1;
     }
 
-    public override void OnClick()
+    public override bool OnClick()
     {
         List<int> connectedTiles = new List<int>();
         List<int> hitTiles = new List<int>();
-        int tileNumber = GridManager.TilePosToId(_parentTile.TilePos);
-        GridManager.GetConnectedTiles(tileNumber, ref connectedTiles, ref hitTiles);
+        int tileNumber = _parentTile.TileId;
+        GridUtils.GetConnectedTiles(tileNumber, ref connectedTiles, ref hitTiles);
 
         if(connectedTiles != null && connectedTiles.Count > 1)
         {
             foreach(int tileNum in connectedTiles)
             {
                 Tile tile = GridManager.s_Instance.GetTile(tileNum); // Not that great of a way to to this too many back and forth commuincation and dependency
-                GridManager.s_Instance.OnTileDestroy(tile, tile.ActiveTileObject());
-                // OnDestroy?.Invoke(tileNum);
+                TileObject tileObject = tile.ActiveTileObject();
+                // GridManager.s_Instance.OnTileDestroy(tile, tile.ActiveTileObject());
+                tileObject.OnDestroy?.Invoke(tile, tileObject);
             }
 
             foreach (int tileNum in hitTiles)
@@ -43,11 +44,13 @@ public abstract class Block : ClickableTileObject, IHitableTileobject, IAudible,
 
             if(connectedTiles.Count >= 5)
             {
-                Debug.Log("Trying to set tile pos: " + _parentTile.TilePos + " To rocket");
-                _parentTile.SetTile(TileObjectType.Rocket);
+                GridManager.s_Instance.SetTile(tileNumber, TileObjectType.Rocket);
             }
 
+            return true;
         }
+
+        return false;
     }
 
     public void OnHit(int damage)

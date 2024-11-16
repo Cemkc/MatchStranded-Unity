@@ -32,9 +32,10 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
         }
     }
 
-    public override void OnClick()
+    public override bool OnClick()
     {
         StartCoroutine(FireRocket(_parentTile.TileId));
+        return true;
     }
 
     public void OnHit(int damage)
@@ -50,8 +51,8 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
 
         int nextTileDelta = _isVertical ? 1 : GridManager.GridDimension;
 
-        Vector2Int tileAPos = GridManager.TileIdToPos(tileNum);
-        Vector2Int tileBPos = GridManager.TileIdToPos(tileNum);
+        Vector2Int tileAPos = GridUtils.TileIdToPos(tileNum);
+        Vector2Int tileBPos = GridUtils.TileIdToPos(tileNum);
 
         while(true)
         {

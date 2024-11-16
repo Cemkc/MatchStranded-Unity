@@ -28,24 +28,19 @@ public class AbsentTile : Tile
         _tilePos = new Vector2Int(col, row);
     }
 
-    public override void OnHit()
-    {
-    }
-
     public override void PlayParticle(ParticleName particleName)
     {
         throw new System.NotImplementedException();
     }
 
-    public override void SetTile(TileObject tileObject)
+    public override void SetTileObject(TileObject tileObject)
     {
         Debug.Log("Setting an absent tile is not allowed.");
     }
 
-    public override void SetTile(TileObjectType type)
+    public override void SetTileObject(TileObjectType type)
     {
-        SetTile(type);
-        return;
+        Debug.Log("Setting an absent tile is not allowed.");
     }
 
 }

@@ -17,8 +17,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GridBlueprint _gridBlueprint;
 
     [SerializeField] private int _gridDimension;
-    [SerializeField] private bool[,] _occcupiedPositions2d;
-    [SerializeField] private int[] _occcupiedPositions;
+    private bool[,] _occcupiedPositions2d;
+    private int[] _occcupiedPositions;
 
     private Dictionary<int, Queue<TileObjectType>> _tileObjPool;
 
@@ -26,8 +26,6 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject _absentTilePrefab;
 
     [SerializeField] private RectTransform _playfieldRectTransform;
-
-    [SerializeField] private GameSettings _gameSettings;
 
     private int _runningSequenceCount;
     private bool _tileDestroyed;
@@ -47,131 +45,7 @@ public class GridManager : MonoBehaviour
     public int RunningSequences { get => _runningSequenceCount; set => _runningSequenceCount = value; }
     public float TileWidth { get => _tileWidth; }
     public float TileHeight { get => _tileHeight; }
-
-    #region Utility functions
-
-    public static IEnumerator MoveTileObjectToPosition(TileObject tileObject, Vector3 targetPosition, TileMoveAnimation animation)
-    {
-        float elapsedTime = 0f;
-
-        Vector3 startPosition = tileObject.transform.position;
-
-        Vector3 initialScale = tileObject.transform.localScale;
-
-        while (elapsedTime < animation.blockToGoalDuration)
-        {
-            // Calculate normalized time [0, 1]
-            float normalizedTime = elapsedTime / animation.blockToGoalDuration;
-
-            // Interpolate position
-            float positionFactor = animation.blockToGoalMoveCurve.Evaluate(normalizedTime);
-            tileObject.transform.position = Vector3.Lerp(startPosition, targetPosition, positionFactor);
-
-            // Interpolate scale
-            float scaleFactor = animation.blockToGoalScaleCurve.Evaluate(normalizedTime);
-            tileObject.transform.localScale = initialScale * scaleFactor;
-
-            // Increment time
-            elapsedTime += Time.deltaTime;
-
-            yield return null;
-        }
-
-        // Ensure the final position and scale are set
-        tileObject.transform.position = targetPosition;
-        tileObject.transform.localScale = initialScale * animation.blockToGoalScaleCurve.Evaluate(1f);
-    }
-
-    public static Vector2 GridToWorldPosition(int col, int row)
-    {
-        float x = s_Instance._playFieldRect.xMin + s_Instance._tileWidth / 2 + col * s_Instance._tileWidth;
-        float y = s_Instance._playFieldRect.yMin + s_Instance._tileHeight / 2 + row * s_Instance._tileHeight ;
-
-        return new Vector2(x, y);
-    }
-
-    public static void GetConnectedTiles(int tile, ref List<int> connectedTiles, ref List<int> hittableTilesOnEdge, int previousTile = -1)
-    {
-        List<int> adjacentTiles = GetAdjacentTiles(tile);
-
-        if(previousTile == -1)
-        {
-            connectedTiles.Add(tile);
-        }
-        
-        foreach (int adjacentTile in adjacentTiles)
-        {
-            if(adjacentTile == previousTile)
-            {
-                continue;
-            }
-            TileObjectType selfType = s_Instance.GetTile(tile).GetTileType();
-            TileObjectType adjacentType = s_Instance.GetTile(adjacentTile).GetTileType();
-            if(selfType == adjacentType && adjacentType != TileObjectType.Absent)
-            {
-                if(!connectedTiles.Contains(adjacentTile))
-                {
-                    connectedTiles.Add(adjacentTile);
-                    GetConnectedTiles(adjacentTile, ref connectedTiles, ref hittableTilesOnEdge, tile);
-                }
-            }
-            else if(s_Instance.GetTile(adjacentTile).GetTileCategory().HasFlag(TileObjectCategory.HitableTileObject))
-            {
-                hittableTilesOnEdge.Add(adjacentTile);
-            }
-        }
-
-        return;
-    }
-
-    public static List<int> GetAdjacentTiles(int tile)
-    {
-        List<int> adjacentTiles = new List<int>();
-
-        // Calculate row and column of the given tile
-        int row = tile % GridDimension;
-        int col = tile / GridDimension;
-
-        // Check above (row + 1)
-        if (row + 1 < GridDimension && s_Instance.GetTile(tile + 1).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile + 1);
-        }
-
-        // Check below (row - 1)
-        if (row - 1 >= 0 && s_Instance.GetTile(tile -1).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile -1);
-        }
-
-        // Check right (col + 1)
-        if (col + 1 < GridDimension && s_Instance.GetTile(tile + GridDimension).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile + GridDimension);
-        }
-
-        // Check left (col - 1)
-        if (col - 1 >= 0 && s_Instance.GetTile(tile - GridDimension).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile - GridDimension);
-        }
-
-        return adjacentTiles;
-    }
-
-    public static int TilePosToId(Vector2Int pos)
-    {
-        return GridDimension * pos.x + pos.y;
-    }
-
-    public static Vector2Int TileIdToPos(int id)
-    {
-        int col = id / s_Instance._gridDimension;
-        int row = id % s_Instance._gridDimension;
-        return new Vector2Int(col, row);
-    }
-
-    #endregion
+    public Rect PlayFieldRect { get => _playFieldRect; }
 
     void Awake()
     {
@@ -228,8 +102,9 @@ public class GridManager : MonoBehaviour
         {
             var tileTypes = TileObjectGenerator.s_Instance.TileObjPrefabMap.Keys.ToList();
             tileTypes.Remove(TileObjectType.None);
+            tileTypes.Remove(TileObjectType.Rocket);
             TileObjectType type = tileTypes[Random.Range(0, tileTypes.Count)];
-            GetTile(tile).SetTile(type);
+            GetTile(tile).SetTileObject(type);
         }
     }
 
@@ -259,7 +134,7 @@ public class GridManager : MonoBehaviour
 
     void GenerateTileMap()
     {
-        _playFieldRect = GetWorldSpaceRect(_playfieldRectTransform);
+        _playFieldRect = GridUtils.GetWorldSpaceRect(_playfieldRectTransform);
         _tileWidth = _playFieldRect.width / _gridDimension;
         _tileHeight = _playFieldRect.height / _gridDimension;
 
@@ -300,22 +175,6 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    Rect GetWorldSpaceRect(RectTransform rectTransform)
-    {
-        Vector3[] corners = new Vector3[4];
-        rectTransform.GetWorldCorners(corners);
-
-        // Bottom-left corner
-        Vector3 bottomLeft = corners[0];
-        // Top-right corner
-        Vector3 topRight = corners[2];
-
-        float width = Mathf.Abs(topRight.x - bottomLeft.x);
-        float height = Mathf.Abs(topRight.y - bottomLeft.y);
-
-        return new Rect(bottomLeft.x, bottomLeft.y, width, height);
-    }
-
     public void OnTapInput(Vector2 touchScreenPosition)
     {
         if(_runningSequenceCount > 0 || _fallSequenceCount > 0) return;
@@ -328,7 +187,10 @@ public class GridManager : MonoBehaviour
             if(tile.GetTileCategory().HasFlag(TileObjectCategory.ClickableTileObject))
             {
                 ClickableTileObject tileObject = (ClickableTileObject)tile.ActiveTileObject();
-                tileObject.OnClick();
+                if(tileObject.OnClick())
+                {
+                    LevelManager.s_Instance.DecreaseMoveCount(1);
+                }
             }
         }
     }
@@ -369,17 +231,37 @@ public class GridManager : MonoBehaviour
                 {
                     foundTileInGrid = true;
                     TileObject tileObject = tileAbove.ActiveTileObject();
-                    tileAbove.SetTile(TileObjectType.None);
+                    tileAbove.SetTileObject(TileObjectType.None);
                     StartCoroutine(FallToPosition(tileObject, tile));
                     // tile.SetTile(tileAbove.GetTileType());
                     break;
                 }
             }
 
-            if(!foundTileInGrid && _tileObjPool.ContainsKey(tile.TilePos.x) && _tileObjPool[tile.TilePos.x].Count > 0)
-            {
-                TileObjectType type = _tileObjPool[tile.TilePos.x].Dequeue();
-                TileObject tileObject = TileObjectGenerator.s_Instance.GetTileObject(type);
+            // if(!foundTileInGrid && _tileObjPool.ContainsKey(tile.TilePos.x) && _tileObjPool[tile.TilePos.x].Count > 0)
+            // {
+            //     TileObjectType type = _tileObjPool[tile.TilePos.x].Dequeue();
+            //     TileObject tileObject = TileObjectGenerator.s_Instance.GetTileObject(type);
+            //     Vector2 tilePos = GetTile(new Vector2Int(tile.TilePos.x, _gridDimension - 1)).transform.position;
+            //     tilePos.y += _tileHeight * 2;
+            //     tileObject.transform.position = tilePos;
+            //     StartCoroutine(FallToPosition(tileObject, tile));
+            // }
+
+            if(!foundTileInGrid){
+                List<TileObjectType> exclude = new List<TileObjectType>
+                {
+                    TileObjectType.Absent,
+                    TileObjectType.None,
+                    TileObjectType.Rocket
+                };
+                var values = Enum.GetValues(typeof(TileObjectType)).Cast<TileObjectType>().Except(exclude).ToArray();
+
+                if (values.Length == 0)
+                    throw new InvalidOperationException("No values left to select from.");
+
+                int index = Random.Range(0, values.Length - 1);
+                TileObject tileObject = TileObjectGenerator.s_Instance.GetTileObject(values[index]);
                 Vector2 tilePos = GetTile(new Vector2Int(tile.TilePos.x, _gridDimension - 1)).transform.position;
                 tilePos.y += _tileHeight * 2;
                 tileObject.transform.position = tilePos;
@@ -397,10 +279,15 @@ public class GridManager : MonoBehaviour
     {
         _fallSequenceCount++;
 
-        yield return StartCoroutine(MoveTileObjectToPosition(tileObject, GridToWorldPosition(tile.TilePos.x, tile.TilePos.y), LevelManager.Settings.FallAnimation));
-        tile.SetTile(tileObject);
+        yield return StartCoroutine(GridUtils.MoveTileObjectToPosition(tileObject, GridUtils.GridToWorldPosition(tile.TilePos.x, tile.TilePos.y), LevelManager.Settings.FallAnimation));
+        tile.SetTileObject(tileObject);
 
         _fallSequenceCount--;
+    }
+
+    public void SetTile(int tileID, TileObjectType type)
+    {
+        GetTile(tileID).SetTileObject(type);
     }
 
     public Tile GetTile(Vector2Int tilePos)
@@ -435,10 +322,11 @@ public class GridManager : MonoBehaviour
         }
 
         if(LevelManager.s_Instance.CountsTowardsGoal(tileObject)){
-            tile.SetTile(TileObjectType.None);
+            tile.SetTileObject(TileObjectType.None);
         }
         else{
-            tile.DestroyTileObject();
+            tile.SetTileObject(TileObjectType.None);
+            TileObjectGenerator.s_Instance.ReturnTileObject(tileObject);
         }
     }
 
