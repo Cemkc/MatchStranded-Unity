@@ -16,9 +16,8 @@ public class GridManager : MonoBehaviour
 
     [SerializeField] private GridBlueprint _gridBlueprint;
 
-    [SerializeField] private int _gridDimension;
-    private bool[,] _occcupiedPositions2d;
-    private int[] _occcupiedPositions;
+    private int _gridDimension;
+    private TileObjectType[] _occcupiedPositions;
 
     private Dictionary<int, Queue<TileObjectType>> _tileObjPool;
 
@@ -61,8 +60,8 @@ public class GridManager : MonoBehaviour
 
         _tileObjPool = new Dictionary<int, Queue<TileObjectType>>();
 
+        _gridDimension = _gridBlueprint.Dimension;
         _occcupiedPositions = _gridBlueprint.OcccupiedPositions;
-        _occcupiedPositions2d = OccupiedPositionsTo2dArray(_gridBlueprint.OcccupiedPositions);
         _tileObjPool = _gridBlueprint.GetTileObjectQueue();
 
         _tileMap = new Tile[_gridDimension, _gridDimension];
@@ -77,7 +76,7 @@ public class GridManager : MonoBehaviour
     void Start()
     {
         GenerateTileMap();
-        RandomFillTiles();
+        // RandomFillTiles();
         InputManager.s_Instance.ConnectInput(this);
     }
 
@@ -96,41 +95,41 @@ public class GridManager : MonoBehaviour
         _preFallSequenceCount = _fallSequenceCount;
     }
 
-    public void RandomFillTiles()
-    {   
-        foreach (int tile in _occcupiedPositions)
-        {
-            var tileTypes = TileObjectGenerator.s_Instance.TileObjPrefabMap.Keys.ToList();
-            tileTypes.Remove(TileObjectType.None);
-            tileTypes.Remove(TileObjectType.Rocket);
-            TileObjectType type = tileTypes[Random.Range(0, tileTypes.Count)];
-            GetTile(tile).SetTileObject(type);
-        }
-    }
+    // public void RandomFillTiles()
+    // {   
+    //     foreach (int tile in _occcupiedPositions)
+    //     {
+    //         var tileTypes = TileObjectGenerator.s_Instance.TileObjPrefabMap.Keys.ToList();
+    //         tileTypes.Remove(TileObjectType.None);
+    //         tileTypes.Remove(TileObjectType.Rocket);
+    //         TileObjectType type = tileTypes[Random.Range(0, tileTypes.Count)];
+    //         GetTile(tile).SetTileObject(type);
+    //     }
+    // }
 
-    private bool[,] OccupiedPositionsTo2dArray(int[] occupiedPos)
-    {
-        int dimension = GridDimension;
-        bool[,] occupiedPosMap = new bool[dimension, dimension];
+    // private bool[,] OccupiedPositionsTo2dArray(int[] occupiedPos)
+    // {
+    //     int dimension = GridDimension;
+    //     bool[,] occupiedPosMap = new bool[dimension, dimension];
 
-        for(int col = 0; col < occupiedPosMap.GetLength(0); col++)
-        {
-            for(int row = 0; row < occupiedPosMap.GetLength(1); row++)
-            {
-                occupiedPosMap[col, row] = false;
-            }
-        }
+    //     for(int col = 0; col < occupiedPosMap.GetLength(0); col++)
+    //     {
+    //         for(int row = 0; row < occupiedPosMap.GetLength(1); row++)
+    //         {
+    //             occupiedPosMap[col, row] = false;
+    //         }
+    //     }
 
-        foreach (int pos in occupiedPos)
-        {
-            int row = pos % dimension;
-            int col = pos / dimension;
+    //     foreach (int pos in occupiedPos)
+    //     {
+    //         int row = pos % dimension;
+    //         int col = pos / dimension;
 
-            occupiedPosMap[col, row] = true;
-        }
+    //         occupiedPosMap[col, row] = true;
+    //     }
 
-        return occupiedPosMap;
-    }
+    //     return occupiedPosMap;
+    // }
 
     void GenerateTileMap()
     {
@@ -149,11 +148,13 @@ public class GridManager : MonoBehaviour
             {
                 GameObject tileGo;
 
-                if(_occcupiedPositions2d[col, row]){
-                    tileGo = Instantiate(_presentTilePrefab, transform);
+                int tileId = GridUtils.TilePosToId(new Vector2Int(col, row));
+
+                if(_occcupiedPositions[tileId] == TileObjectType.Absent){
+                    tileGo = Instantiate(_absentTilePrefab, transform);
                 }
                 else{
-                    tileGo = Instantiate(_absentTilePrefab, transform);
+                    tileGo = Instantiate(_presentTilePrefab, transform);
                 }
 
                 tileGo.transform.localScale = new Vector3(_tileWidth, _tileHeight, 1);
@@ -171,6 +172,7 @@ public class GridManager : MonoBehaviour
                 catch(Exception e){ Debug.LogError(e); }
 
                 _tileMap[col, row].Init(col, row);
+                _tileMap[col, row].SetTileObject(_occcupiedPositions[tileId]);
             }
         }
     }
