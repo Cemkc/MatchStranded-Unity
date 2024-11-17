@@ -36,7 +36,7 @@ public class PresentTile : Tile
     public override void Init(int col, int row)
     {
         _tilePos = new Vector2Int(col, row);
-        _tileId = col * GridManager.GridDimension + row;
+        _tileId = col * GridManager.s_Instance.GridDimension + row;
     }
 
     public override void SetTileObject(TileObject tileObject)

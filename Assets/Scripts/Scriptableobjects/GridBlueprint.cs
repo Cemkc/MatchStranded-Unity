@@ -18,7 +18,7 @@ public class GridBlueprint : ScriptableObject
 
     [SerializeField] private int _dimension;
     [SerializeField] private TileObjectType[] _occcupiedPositions;
-    [SerializeField] private List<TileObjListStruct> _tileObjectQueueInspector; // Temporary solution
+    private List<TileObjListStruct> _tileObjectQueueInspector; // Temporary solution
     private Dictionary<int, Queue<TileObjectType>> _tileObjectQueue = new Dictionary<int, Queue<TileObjectType>>();
 
     public int Dimension { get => _dimension; }

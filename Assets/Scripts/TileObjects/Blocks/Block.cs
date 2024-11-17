@@ -22,7 +22,7 @@ public abstract class Block : ClickableTileObject, IHitableTileobject, IAudible,
         List<int> connectedTiles = new List<int>();
         List<int> hitTiles = new List<int>();
         int tileNumber = _parentTile.TileId;
-        GridUtils.GetConnectedTiles(tileNumber, ref connectedTiles, ref hitTiles);
+        GridManager.s_Instance.GetConnectedTiles(tileNumber, ref connectedTiles, ref hitTiles);
 
         if(connectedTiles != null && connectedTiles.Count > 1)
         {

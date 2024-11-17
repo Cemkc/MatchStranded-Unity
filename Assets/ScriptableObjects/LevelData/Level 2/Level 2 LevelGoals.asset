@@ -10,16 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aa9491a8bbbfb8d4eb1edd2be56adb07, type: 3}
-  m_Name: LevelGoals
+  m_Name: Level 2 LevelGoals
   m_EditorClassIdentifier: 
   _moveCount: 25
   _tileGoalAttribution:
-  - tileObjectPrefab: {fileID: 6835588470268470269, guid: a22fd127af9dfaa419bdaccc0e3f575f, type: 3}
-    goalObjectType: 9
-    goalCount: 5
-  - tileObjectPrefab: {fileID: 7356604826848351206, guid: 08d2a3379d6fa0341b35cb1dfb3bbc74, type: 3}
-    goalObjectType: 4
-    goalCount: 30
-  - tileObjectPrefab: {fileID: 6835588470268470269, guid: e2db7a75614f5d448a034c95a25f3a63, type: 3}
+  - tileObjectPrefab: {fileID: 6835588470268470269, guid: 5bb11079c7de5f54b8b1a0d618131fbe, type: 3}
     goalObjectType: 2
-    goalCount: 30
+    goalCount: 10
+  - tileObjectPrefab: {fileID: 7356604826848351206, guid: 08d2a3379d6fa0341b35cb1dfb3bbc74, type: 3}
+    goalObjectType: 7
+    goalCount: 20
+  - tileObjectPrefab: {fileID: 6835588470268470269, guid: e2db7a75614f5d448a034c95a25f3a63, type: 3}
+    goalObjectType: 5
+    goalCount: 15

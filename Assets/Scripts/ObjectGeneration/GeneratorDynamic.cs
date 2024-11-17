@@ -10,7 +10,7 @@ public class GeneratorDynamic : TileObjectGenerator
 
     public override TileObject GetTileObject(TileObjectType type)
     {
-        TileObject tileObject = Instantiate(_tileObjPrefabMap[type].GetComponent<TileObject>());
+        TileObject tileObject = Instantiate(_tileObjPrefabMap[type].GetComponent<TileObject>(), transform);
         tileObject.transform.localScale = new Vector3(GridManager.s_Instance.TileWidth * 0.8f, GridManager.s_Instance.TileHeight * 0.8f, 1);
         // SpriteRenderer spriteRenderer;
         // if(TryGetComponent(out spriteRenderer))

@@ -5,13 +5,10 @@ public class AbsentTile : Tile
 {
     public override TileObject ActiveTileObject()
     {
-        throw new System.NotImplementedException();
+        return null;
     }
 
-    public override void DestroyTileObject()
-    {
-        throw new System.NotImplementedException();
-    }
+    public override void DestroyTileObject(){}
 
     public override TileObjectCategory GetTileCategory()
     {

@@ -49,10 +49,10 @@ public class RocketTileObject : ClickableTileObject, IHitableTileobject
 
         _rocketFired = true;
 
-        int nextTileDelta = _isVertical ? 1 : GridManager.GridDimension;
+        int nextTileDelta = _isVertical ? 1 : GridManager.s_Instance.GridDimension;
 
-        Vector2Int tileAPos = GridUtils.TileIdToPos(tileNum);
-        Vector2Int tileBPos = GridUtils.TileIdToPos(tileNum);
+        Vector2Int tileAPos = GridManager.s_Instance.TileIdToPos(tileNum);
+        Vector2Int tileBPos = GridManager.s_Instance.TileIdToPos(tileNum);
 
         while(true)
         {

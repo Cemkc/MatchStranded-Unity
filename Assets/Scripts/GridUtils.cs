@@ -2,9 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public static class GridUtils{
-
-    private static GridManager _gridManager = GridManager.s_Instance;
+public class GridUtils{
 
     #region Utility functions
 
@@ -40,83 +38,6 @@ public static class GridUtils{
         tileObject.transform.localScale = initialScale * animation.blockToGoalScaleCurve.Evaluate(1f);
     }
 
-    public static Vector2 GridToWorldPosition(int col, int row)
-    {
-        float x = _gridManager.PlayFieldRect.xMin + _gridManager.TileWidth / 2 + col * _gridManager.TileWidth;
-        float y = _gridManager.PlayFieldRect.yMin + _gridManager.TileHeight / 2 + row * _gridManager.TileHeight;
-
-        return new Vector2(x, y);
-    }
-
-    public static void GetConnectedTiles(int tile, ref List<int> connectedTiles, ref List<int> hittableTilesOnEdge, int previousTile = -1)
-    {
-        List<int> adjacentTiles = GetAdjacentTiles(tile);
-
-        if(previousTile == -1)
-        {
-            connectedTiles.Add(tile);
-        }
-        
-        foreach (int adjacentTile in adjacentTiles)
-        {
-            if(adjacentTile == previousTile)
-            {
-                continue;
-            }
-            TileObjectType selfType = _gridManager.GetTile(tile).GetTileType();
-            TileObjectType adjacentType = _gridManager.GetTile(adjacentTile).GetTileType();
-            if(selfType == adjacentType && adjacentType != TileObjectType.Absent)
-            {
-                if(!connectedTiles.Contains(adjacentTile))
-                {
-                    connectedTiles.Add(adjacentTile);
-                    GetConnectedTiles(adjacentTile, ref connectedTiles, ref hittableTilesOnEdge, tile);
-                }
-            }
-            else if(_gridManager.GetTile(adjacentTile).GetTileCategory().HasFlag(TileObjectCategory.HitableTileObject))
-            {
-                hittableTilesOnEdge.Add(adjacentTile);
-            }
-        }
-
-        return;
-    }
-
-    public static List<int> GetAdjacentTiles(int tile)
-    {
-        List<int> adjacentTiles = new List<int>();
-
-        // Calculate row and column of the given tile
-        int row = tile % GridManager.GridDimension;
-        int col = tile / GridManager.GridDimension;
-
-        // Check above (row + 1)
-        if (row + 1 < GridManager.GridDimension && _gridManager.GetTile(tile + 1).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile + 1);
-        }
-
-        // Check below (row - 1)
-        if (row - 1 >= 0 && _gridManager.GetTile(tile -1).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile -1);
-        }
-
-        // Check right (col + 1)
-        if (col + 1 < GridManager.GridDimension && _gridManager.GetTile(tile + GridManager.GridDimension).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile + GridManager.GridDimension);
-        }
-
-        // Check left (col - 1)
-        if (col - 1 >= 0 && _gridManager.GetTile(tile - GridManager.GridDimension).GetTileType() != TileObjectType.Absent)
-        {
-            adjacentTiles.Add(tile - GridManager.GridDimension);
-        }
-
-        return adjacentTiles;
-    }
-
     public static Rect GetWorldSpaceRect(RectTransform rectTransform)
     {
         Vector3[] corners = new Vector3[4];
@@ -131,18 +52,6 @@ public static class GridUtils{
         float height = Mathf.Abs(topRight.y - bottomLeft.y);
 
         return new Rect(bottomLeft.x, bottomLeft.y, width, height);
-    }
-
-    public static int TilePosToId(Vector2Int pos)
-    {
-        return GridManager.GridDimension * pos.x + pos.y;
-    }
-
-    public static Vector2Int TileIdToPos(int id)
-    {
-        int col = id / GridManager.GridDimension;
-        int row = id % GridManager.GridDimension;
-        return new Vector2Int(col, row);
     }
 
     #endregion

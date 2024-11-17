@@ -8,7 +8,7 @@ public class GeneratorPool : TileObjectGenerator
 
     public override void Init()
     {
-        int dimension = Mathf.Min(GridManager.GridDimension, _maxDimensionCoverage); 
+        int dimension = Mathf.Min(GridManager.s_Instance.GridDimension, _maxDimensionCoverage); 
         int numberOfObjectsPerType = dimension * dimension * 2;
 
         _tileObjectsDict = new Dictionary<TileObjectType, Stack<GameObject>>();
@@ -52,6 +52,7 @@ public class GeneratorPool : TileObjectGenerator
     {
         TileObjectType type = tileObject.Type;
         ResetTileObject(tileObject.gameObject);
+        if(tileObject.Type == TileObjectType.Duck) Debug.Log("Got a duck setting it inactive. ");
         tileObject.gameObject.SetActive(false);
         _tileObjectsDict[type].Push(tileObject.gameObject);
     }
