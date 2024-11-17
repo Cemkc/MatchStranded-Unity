@@ -43,6 +43,7 @@ public abstract class TileObjectGenerator : MonoBehaviour
         }
 
         Init();
+
     }
 
     public abstract void Init();

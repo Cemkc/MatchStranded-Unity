@@ -1,32 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Events;
+
+[System.Serializable]
+public class TileGoalData
+{
+    public GameObject tileObjectPrefab;
+    public TileObjectType goalObjectType;
+    public int goalCount;
+}
 
 public class LevelManager : MonoBehaviour
 {
-    [System.Serializable]
-    private struct GoalAttribution
-    {
-        public TileObjectType tileObject;
-        public int goalNumber;
-    }
-
     public static LevelManager s_Instance;
 
+    public UnityAction<int> OnMovesCountChange;
+    public UnityAction<TileObjectType, int> OnGoalCountChange;
+
     [SerializeField] private GameSettings _settings;
+    public LevelGoals levelGoals;
 
-    [SerializeField] private RectTransform _goalsRectTransform;
-    [SerializeField] private Rect _goalsRect;
-    [SerializeField] private int _moveCount;
-    [SerializeField] private Text _movesText;
+    private int _moveCount;
 
-    [SerializeField] private GoalAttribution[] _goalAttributions;
-    [SerializeField] private Dictionary<TileObjectType, int> _goalCountDict;
-    [SerializeField] private Dictionary<TileObjectType, TileObject> _goalObjectDict;
-
+    private Dictionary<TileObjectType, TileGoalData> _tileGoalDict;
+    // [SerializeField] private Dictionary<TileObjectType, int> _goalCountDict;
+    // [SerializeField] private Dictionary<TileObjectType, TileObject> _goalObjectDict;
 
     public static GameSettings Settings { get => s_Instance._settings; }
+    public int MoveCount { get => _moveCount; }
+    public Dictionary<TileObjectType, TileGoalData> TileGoalDict { get => _tileGoalDict; }
 
     void Awake()
     {
@@ -35,64 +38,34 @@ public class LevelManager : MonoBehaviour
             Destroy(this); 
         }
         else 
-        { 
+        {
             s_Instance = this; 
         }    
 
-        _goalCountDict = new Dictionary<TileObjectType, int>();
-        _goalObjectDict = new Dictionary<TileObjectType, TileObject>();
-        _movesText.text = _moveCount.ToString();
+        levelGoals = Instantiate(levelGoals);
 
-        foreach (GoalAttribution goalAttribution in _goalAttributions)
+        _moveCount = levelGoals.MoveCount;
+
+        _tileGoalDict = new Dictionary<TileObjectType, TileGoalData>();
+
+        foreach (TileGoalData goalAttribution in levelGoals.TileGoalAttribution)
         {
-            if(!_goalCountDict.ContainsKey(goalAttribution.tileObject)){
-                _goalCountDict[goalAttribution.tileObject] = goalAttribution.goalNumber;
+            if(!_tileGoalDict.ContainsKey(goalAttribution.goalObjectType)){
+                _tileGoalDict[goalAttribution.goalObjectType] = goalAttribution;
+                _tileGoalDict[goalAttribution.goalObjectType].goalCount = goalAttribution.goalCount;
+                _tileGoalDict[goalAttribution.goalObjectType].tileObjectPrefab = goalAttribution.tileObjectPrefab;
             }
         }
     }
 
-    void Start()
-    {
-        _goalsRect = GridUtils.GetWorldSpaceRect(_goalsRectTransform);
-
-        float tileWidth;
-        float tileHeight;
-
-        tileWidth = _goalsRect.width / _goalCountDict.Keys.Count;
-        tileHeight = tileWidth;
-
-        Vector2 startPosition = new Vector2(
-            _goalsRect.x + tileWidth / 2,
-            _goalsRect.y + _goalsRect.height / 2
-        );
-
-
-        int index = 0;
-        foreach (KeyValuePair<TileObjectType, int> pair in _goalCountDict)
-        {
-            TileObject tileObject = TileObjectGenerator.s_Instance.GetTileObject(pair.Key);
-            if(!_goalObjectDict.ContainsKey(pair.Key)) _goalObjectDict[pair.Key] = tileObject; 
-            Vector2 tilePosition = new Vector3(
-                startPosition.x + index * tileWidth,
-                startPosition.y,
-                0.0f
-            );
-
-            tileObject.transform.position = tilePosition;
-
-            index++;
-        }
-    }
-
-
     public bool CountsTowardsGoal(TileObject tileObject)
     {
-        if(_goalCountDict.ContainsKey(tileObject.Type) && _goalCountDict[tileObject.Type] > 0){
+        if(_tileGoalDict.ContainsKey(tileObject.Type) && _tileGoalDict[tileObject.Type].goalCount > 0){
             Vector3 pos = tileObject.transform.position;
             pos.z--;
             tileObject.transform.position = pos;
-            TileObject goalObject = _goalObjectDict[tileObject.Type];
-            StartCoroutine(MoveTowardsGoal(tileObject, goalObject.transform.position, _settings.MoveToGoalAnimation));
+            Vector2 uiPosition = UIManager.s_Instance.GoalPositionUI(tileObject.Type);
+            StartCoroutine(MoveTowardsGoal(tileObject, uiPosition, _settings.MoveToGoalAnimation));
             return true;
         }
         else return false;
@@ -101,13 +74,15 @@ public class LevelManager : MonoBehaviour
     private IEnumerator MoveTowardsGoal(TileObject tileObject, Vector3 targetPosition, TileMoveAnimation animation)
     {
         yield return StartCoroutine(GridUtils.MoveTileObjectToPosition(tileObject, targetPosition, animation));
+        _tileGoalDict[tileObject.Type].goalCount--;
+        OnGoalCountChange?.Invoke(tileObject.Type, _tileGoalDict[tileObject.Type].goalCount);
         TileObjectGenerator.s_Instance.ReturnTileObject(tileObject);
     }
 
     public void DecreaseMoveCount(int number)
     {
         _moveCount -= number;
-        _movesText.text = _moveCount.ToString();
+        OnMovesCountChange?.Invoke(_moveCount);
     }
 
 }

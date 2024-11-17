@@ -240,6 +240,7 @@ public class GridManager : MonoBehaviour
                 }
             }
 
+            // This lines of code is to get object from a list that is defined in level design
             // if(!foundTileInGrid && _tileObjPool.ContainsKey(tile.TilePos.x) && _tileObjPool[tile.TilePos.x].Count > 0)
             // {
             //     TileObjectType type = _tileObjPool[tile.TilePos.x].Dequeue();
@@ -255,14 +256,14 @@ public class GridManager : MonoBehaviour
                 {
                     TileObjectType.Absent,
                     TileObjectType.None,
-                    TileObjectType.Rocket
+                    TileObjectType.Balloon,
                 };
                 var values = Enum.GetValues(typeof(TileObjectType)).Cast<TileObjectType>().Except(exclude).ToArray();
 
                 if (values.Length == 0)
                     throw new InvalidOperationException("No values left to select from.");
 
-                int index = Random.Range(0, values.Length - 1);
+                int index = Random.Range(0, values.Length);
                 TileObject tileObject = TileObjectGenerator.s_Instance.GetTileObject(values[index]);
                 Vector2 tilePos = GetTile(new Vector2Int(tile.TilePos.x, _gridDimension - 1)).transform.position;
                 tilePos.y += _tileHeight * 2;
@@ -285,11 +286,6 @@ public class GridManager : MonoBehaviour
         tile.SetTileObject(tileObject);
 
         _fallSequenceCount--;
-    }
-
-    public void SetTile(int tileID, TileObjectType type)
-    {
-        GetTile(tileID).SetTileObject(type);
     }
 
     public Tile GetTile(Vector2Int tilePos)

@@ -44,7 +44,7 @@ public abstract class Block : ClickableTileObject, IHitableTileobject, IAudible,
 
             if(connectedTiles.Count >= 5)
             {
-                GridManager.s_Instance.SetTile(tileNumber, TileObjectType.Rocket);
+                GridManager.s_Instance.GetTile(tileNumber).SetTileObject(TileObjectType.Rocket);
             }
 
             return true;

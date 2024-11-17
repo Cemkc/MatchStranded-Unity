@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-[CreateAssetMenu(fileName = "Grid Blueprint", menuName = "Scriptable Objects/Grid Blueprint")]
+[CreateAssetMenu(fileName = "Grid Blueprint", menuName = "Scriptable Objects/Level/Grid Blueprint")]
 public class GridBlueprint : ScriptableObject
 {
     public UnityAction<GridBlueprint> OnDraw;

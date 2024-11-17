@@ -43,7 +43,10 @@ public class PresentTile : Tile
     {
         if(tileObject != null)
         {
-            if(_activeTileObject != null) _activeTileObject.ParentTile = null;
+            if(_activeTileObject != null) {
+                if(_activeTileObject.Type == TileObjectType.None) TileObjectGenerator.s_Instance.ReturnTileObject(_activeTileObject);
+                _activeTileObject.ParentTile = null;
+            }
             _activeTileObject = tileObject;
             _activeTileObject.ParentTile = this;
             _activeTileObject.transform.position = transform.position;
