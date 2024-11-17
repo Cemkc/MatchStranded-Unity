@@ -19,7 +19,7 @@ public class GridManager : MonoBehaviour
     private int _gridDimension;
     private TileObjectType[] _occcupiedPositions;
 
-    private Dictionary<int, Queue<TileObjectType>> _tileObjPool;
+    // private Dictionary<int, Queue<TileObjectType>> _tileObjPool;
 
     [SerializeField] private GameObject _presentTilePrefab;
     [SerializeField] private GameObject _absentTilePrefab;
@@ -44,9 +44,7 @@ public class GridManager : MonoBehaviour
     public int RunningSequences { get => _runningSequenceCount; set => _runningSequenceCount = value; }
     public float TileWidth { get => _tileWidth; }
     public float TileHeight { get => _tileHeight; }
-    public Rect PlayFieldRect { get => _playFieldRect; }
-
-    
+    public Rect PlayFieldRect { get => _playFieldRect; }    
 
     void Awake()
     {
@@ -60,11 +58,8 @@ public class GridManager : MonoBehaviour
             s_Instance = this; 
         }
 
-        _tileObjPool = new Dictionary<int, Queue<TileObjectType>>();
-
         _gridDimension = _gridBlueprint.Dimension;
         _occcupiedPositions = _gridBlueprint.OcccupiedPositions;
-        _tileObjPool = _gridBlueprint.GetTileObjectQueue();
 
         _tileMap = new Tile[_gridDimension, _gridDimension];
 

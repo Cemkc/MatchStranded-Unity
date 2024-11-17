@@ -18,23 +18,11 @@ public class GridBlueprint : ScriptableObject
 
     [SerializeField] private int _dimension;
     [SerializeField] private TileObjectType[] _occcupiedPositions;
-    private List<TileObjListStruct> _tileObjectQueueInspector; // Temporary solution
-    private Dictionary<int, Queue<TileObjectType>> _tileObjectQueue = new Dictionary<int, Queue<TileObjectType>>();
+    // private List<TileObjListStruct> _tileObjectQueueInspector; // Temporary solution
+    // private Dictionary<int, Queue<TileObjectType>> _tileObjectQueue = new Dictionary<int, Queue<TileObjectType>>();
 
     public int Dimension { get => _dimension; }
     public TileObjectType[] OcccupiedPositions { get => _occcupiedPositions; }
-
-    public Dictionary<int, Queue<TileObjectType>> GetTileObjectQueue() // Make it an initializer don't do this each time to get the queue
-    {
-        foreach(var tileObjColumnAttrib in _tileObjectQueueInspector)
-        {
-            if(!_tileObjectQueue.ContainsKey(tileObjColumnAttrib.column)) {
-                _tileObjectQueue[tileObjColumnAttrib.column] = new Queue<TileObjectType>(tileObjColumnAttrib.tileObjects);
-            }
-        }
-
-        return _tileObjectQueue;
-    }
 
     public void Init()
     {
